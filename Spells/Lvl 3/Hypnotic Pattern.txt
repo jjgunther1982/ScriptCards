@@ -1,0 +1,35 @@
+!scriptcards{{
++++5ETools+++
+  --#sourceToken|@{selected|token_id}
+  --#reentrant|@{selected|character_id}
+
+--/|                >>>>> Formatting <<<<< 
+  --#titlecardbackgroundimage|linear-gradient(360deg, rgba(2,0,36,1) 0%, rgba(0,227,208,1) 100%); 
+  --#emoteBackground|#transparent
+  --#titleCardBackground|#00e3d0
+  --#titlefontsize|1.75em
+  --#titlefontlineheight|1.75em
+  --#titleFontColor|white
+  --#titlefontface|Shadows Into Light
+  --#subtitleFontSize|12px
+  --#subtitleFontFace|Verdana
+  --#evenRowBackground|#B6AB91
+  --#evenRowFontColor|#000000
+  --#oddRowBackground|#CEC7B6
+  --#oddRowFontColor|#000000
+
+  --#title|Hypnotic Pattern
+  --#rightsub|Ranged Lvl 3 Illusion Spell
+  --#leftsub|120 Feet
+
+
+  -->Lib5E_Warlock_GetAndCheckSlotInformation|
+
+  --#emoteText|
+  --+|[*S:t-name] creates a twisting pattern of colors that weaves through the air inside a 30-ft cube.
+  --+Spell Token|Use the Hypnotic Pattern spell token to finish this spell.
+  --@token-mod| _ids [*S:t-id] _set statusmarkers|aura
+  --:Lib5E_DeductSpellSlot|[*S:character_id];[$SlotLevel]
+  --X|
+
+}}

@@ -1,0 +1,104 @@
+!scriptcard {{ 
+  --#title|Magic Missile
+  --#sourceToken|@{selected|token_id}
+  --#reentrant|Spell
+--/|                >>>>> Formatting <<<<< 
+  --#titlecardbackgroundimage|linear-gradient(360deg, rgba(2,0,36,1) 0%, rgba(0,227,208,1) 100%); 
+  --#emoteBackground|#transparent
+  --#titleCardBackground|#00e3d0
+  --#titlefontsize|1.75em
+  --#titlefontlineheight|1.75em
+  --#titleFontColor|white
+  --#titlefontface|Shadows Into Light
+  --#subtitleFontSize|12px
+  --#subtitleFontFace|Verdana
+  --#evenRowBackground|#B6AB91
+  --#evenRowFontColor|#000000
+  --#oddRowBackground|#CEC7B6
+  --#oddRowFontColor|#000000
+  --#whisper|self,gm
+
+  -->GetAndCheckSlotInformation|
+  --#whisper|
+  --=MissileCount|[$SlotLevel] + 2
+  -->BuildAndAskTargets|[$MissileCount.Raw]
+  --=DisplayCount|1
+  --=MissileDamage|0
+  --#leftsub|Slot level [$SlotLevel]
+  --#rightsub|Ranged Attack
+  --#emoteText|@{selected|character_name} uses a level [$SlotLevel.Raw] spell slot to fire [$MissileCount.Raw] missiles of magical force!
+
+  --:MissileLoop|
+  -->FireMissile|[$DisplayCount.Raw]
+  --=DisplayCount|[$DisplayCount] + 1
+  --?[$DisplayCount] -le [$MissileCount]|MissileLoop
+  --+Total|Total damage is [$MissileDamage]
+  -->DeductSpellSlot|
+  --X|
+
+  --:FireMissile|
+  --&ThisTarget|[&target[%1%]]
+  --=ThisMissile|1d4 + 1
+  --=MissileDamage|[$MissileDamage] + [$ThisMissile]
+  --+Missile|[$DisplayCount.Raw] Hits [*[&ThisTarget]:character_name] for [$ThisMissile] [b]force[/b] damage
+  -->PlayEffects|@{selected|token_id};[&ThisTarget];none;burst-smoke;beam-magic;missile
+  -->ApplyDamageTokenmod|[&ThisTarget];1;-[$ThisMissile.Raw]
+  --//ApplyDamageAlterbars|[&ThisTarget];1;-[$ThisMissile.Raw]
+  --<|
+
+  --:GetAndCheckSlotInformation|
+  --+What Spell Slot Level?|Click a button bellow to select your spell slot level.
+  --+|[rbutton]1::knowYourLVL1;1[/rbutton][rbutton]2::knowYourLVL1;2[/rbutton][rbutton]3::knowYourLVL1;3[/rbutton][rbutton]4::knowYourLVL1;4[/rbutton][rbutton]5::knowYourLVL1;5[/rbutton][rbutton]6::knowYourLVL1;6[/rbutton][rbutton]7::knowYourLVL1;7[/rbutton][rbutton]8::knowYourLVL1;8[/rbutton][rbutton]9::knowYourLVL1;9[/rbutton]
+  --X|
+  --:knowYourLVL1|
+  --=SlotLevel|[&reentryval]
+  --=SlotsTotal|0
+  --=SlotsExpended|[*S:lvl[$SlotLevel]_slots_expended]
+  --?[$SlotsExpended.Raw] -eq [$SlotsTotal.Raw]|NoSlotsLeft
+  --<|
+
+  --:NoSlotsLeft|
+  --+|[*S:character_name] has no level [$SlotLevel.Raw] spell slots available.
+  --#emoteText|[*S:character_name] tries to cast a spell at [*T:character_name] but farts in instead.
+  -->PlayEffects|@{selected|token_id};none;bomb-acid;none;none;Fart
+  --X|NoSlotsLeftStop
+
+  --:DeductSpellSlot|
+  --=SlotsExpended|[$SlotsExpended] - 1
+  --@setattr|_charid [*S:character_id] _lvl[$SlotLevel]_slots_expended|[$SlotsExpended] _silent
+  --+|Level [$SlotLevel] Slots Left: [$SlotsExpended] 
+  --X|Full Stop
+
+  --:PlayEffects|Parameters are : sourcetoken; targettoken; source effect; target effect; line effect; sound effect
+  --vtoken|[%1%] [%3%]
+  --vtoken|[%2%] [%4%]
+  --vbetweentokens|[%1%] [%2%] [%5%]
+  --@roll20AM|_audio,play,nomenu|[%6%]
+  --<|
+
+  --:ApplyDamageTokenmod|Parameters are tokenid;bar#;amount
+  --+|[*[&ThisTarget]:token_id]
+  --@token-mod| _ids [*[%2%]:token_id] _set bar[%2%]_value|[%3%]
+  --@token-mod|_ignore-selected _ids [%1%] _set bar[%2%]_value|[%3%]
+   --<|
+
+  --:ApplyDamageAlterbars|
+  --@alter|_target|[%2%] _bar|[%2%] _amount|[%3%]
+  --<|
+
+  --:BuildAndAskTargets|
+  --&TargetString|
+  --=targetCount|1
+  --:TargetLoop|
+  --&TargetString|+t;target[$targetCount.Raw];Missile [$targetCount.Raw] Target
+  --=targetCount|[$targetCount.Raw] + 1
+  --?[$targetCount.Raw] -le [%1%]|>AddSeparator
+  --?[$targetCount.Raw] -le [%1%]|TargetLoop
+  --iPlease click the button below to select magic missile targets. The same target can be selected multiple times;Select [%1%] Targets|[&TargetString]
+  --/|
+  --<|
+
+  --:AddSeparator|
+  --&TargetString|+||
+  --<|
+}}

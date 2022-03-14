@@ -1,0 +1,99 @@
+!scriptcards{{
+
+  --#reentrant|@{selected|character_id}  ​
+
+  --/|Description : Incapacitates tokens in a 30 ft cube
+  --/|Set up the card appearance
+  --#title|Hypnotic Pattern
+  --#bodyFontSize|12px
+  --#titlecardbackground|#800000
+  --=DC|[*-MjKuHmh7eS3Kh472t6H:spell_save_dc]
+  --#leftsub|Save DC [*-MjKuHmh7eS3Kh472t6H:spell_save_dc]
+  --#sourceToken|@{selected|token_id}
+  --#whisper|
+
+  --#rightsub|Level 3 Illusion Spell
+
+  --/|Get all tokens on the page into the "alltokens" array
+  --~|array;pagetokens;alltokens;@{selected|token_id}
+
+  --/|Create the "inRange" array. It will have a blank item in it to begin with, which we will remove later.
+  --~|array;define;inRange;
+
+  --/|Loop through all of the tokens in "alltokens" to check their distance
+  --~tokenid|array;getfirst;alltokens
+  --?[&tokenid] -eq ArrayError|endOutput
+  --:loopCheck|
+
+  --/|Skip targets that are not on the token layer or that don't represent creatures
+  --?[*[&tokenid]:t-layer] -ne objects|continue
+  --?"[*[&tokenid]:t-represents]" -ninc "-"|continue
+  --?"[*[&tokenid]:t-name]" -inc "Hypnotic Pattern token"|continue
+
+  --/|Check the distance between the target token and the current array token. 20 feet is 4 units
+  --~dist|distance;@{selected|token_id};[&tokenid]
+  --?[$dist] -gt 2|continue
+
+  --/|If we didn't skip over this part, the token is within 20 feet, so add it to the inRange array
+  --~|array;add;inRange;[&tokenid]
+  --:continue|
+  --~tokenid|array;getnext;alltokens
+  --?[&tokenid] -ne ArrayError|loopCheck
+
+  --/|Remove the dummy first item in the inRange array
+  --~|array;removeat;inRange;0
+
+  --/|Loop through the inRange tokens and roll saves for each one and apply damage
+  --~tokenid|array;getfirst;inRange
+  --?[&tokenid] -eq ArrayError|endOutput
+  --:loopDisplay|
+  -->MakeSavingThrow|[&tokenid];wisdom;[$DC];0;charm;thisTokenDamage;saveResult;wis
+  --+[*[&tokenid]:t-name]:|Save [$savingThrow] [r][&thisTokenDamage][/r]
+
+  --/|Put a burn-fire visual effect on impacted tokens
+  --vtoken|[&tokenid] burn-magic
+
+  --/|Get the next token and continue the loop until we run out.
+  --~tokenid|array;getnext;inRange
+  --?[&tokenid] -ne ArrayError|loopDisplay
+
+  --/|Add some extra visual effects - a nova-fire at the target, and a beam-fire from source to target
+  --vtoken|@{selected|token_id} nova-magic
+  --vbetweentokens|[*-Mk3RpRKULZNkUPUj-x-:t-id] @{selected|token_id} beam-magic
+
+  --:endOutput|
+  --@roll20AM|_audio,play,nomenu|Hypnotic Pattern
+  --X|
+
+  --/|Subroutine to make saving throws and calculate damage amounts
+  --:MakeSavingThrow|tokenid;savetype;dc;damage;spelltype;damagevariable;saveresultvariable;shortabilityname
+  --?"X[*[%1%]:npc_[%8%]_save_base]" -eq "X"|>set_string;baseSaveBonus;|>set_string;baseSaveBonus; + + [*[%1%]:npc_[%8%]_save_base] [Prof] [[%
+  -->CheckForFey|[%1%]
+  --?"[&FeyYeah]" -eq "No"|&Dice;1d20|&Dice;2d20kh1
+  --=savingThrow|[&Dice] + [*[%1%]:[%2%]_save_bonus][&baseSaveBonus]
+  --&dmgmult|
+  --?[$savingThrow] -lt [%3%]|>set_string;[%7%];fail
+  --?[$savingThrow] -ge [%3%]|>set_string;[%7%];success
+  --?[$savingThrow] -lt [%3%]|>set_string;[%6%];[*[%1%]:t-name] is incapacitated.
+  --?[$savingThrow] -lt [%3%] -and "[*[%1%]:npc_condition_immunities]" -inc "[%5%]"|>set_string;[%6%];[*[%1%]:t-name] is immune to charm.
+  --?[$savingThrow] -ge [%3%]|>set_string;[%6%];[*[%1%]:t-name] passed their saving throw.
+  --?[$savingThrow] -lt [%3%] -and "[*[%1%]:npc_condition_immunities]" -ninc "[%5%]"|>setMarker;[%1%];interdiction
+  --<|
+  --:set_string|mod_variable;value
+  --&[%1%]|[%2%]
+  --<|
+  
+  --/|Subroutine to apply token markers with TokenMod.
+  --:setMarker|Parameters are tokenid;token Marker
+  --@token-mod| _ids [%1%] _set statusmarkers|interdiction
+  --<|
+
+  --:CheckForFey|token_id
+  --Rfirst|[*[%1%]:character_id];repeating_npctrait
+  --:CheckForFeyLoop|
+  --?"[*R:name]" -inc "Fey Ancestory"|&FeyYeah;Yes|&FeyYeah;No
+  --Rnext|
+  --?"[*R:name]" -ninc "NoRepeatingAttributeLoaded"|CheckForFeyLoop
+  --<|
+
+}}

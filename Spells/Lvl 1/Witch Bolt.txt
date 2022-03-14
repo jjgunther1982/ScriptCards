@@ -1,0 +1,243 @@
+!scriptcards {{ 
+  --#sourceToken|@{selected|token_id}
+  --#targetToken|@{target|token_id}
+  --#reentrant|@{selected|character_id}
+
+--/|                >>>>> Formatting <<<<< 
+  --#titlecardbackgroundimage|linear-gradient(360deg, rgba(2,0,36,1) 0%, rgba(0,227,208,1) 100%); 
+  --#emoteBackground|#transparent
+  --#titleCardBackground|#00e3d0
+  --#titlefontsize|1.75em
+  --#titlefontlineheight|1.75em
+  --#titleFontColor|white
+  --#titlefontface|Shadows Into Light
+  --#subtitleFontSize|12px
+  --#subtitleFontFace|Verdana
+  --#evenRowBackground|#B6AB91
+  --#evenRowFontColor|#000000
+  --#oddRowBackground|#CEC7B6
+  --#oddRowFontColor|#000000
+  --#whisper|self,gm
+
+  --#title|Witch Bolt
+  --#rightsub|Ranged Spell
+  --#leftsub|30 Feet
+
+  -->GetAndCheckSlotInformation|
+  --?[$Recast] -eq 1|Hit
+
+  --+Choose an attack roll type.|[rbutton]Standard::knowYourRoll1;1d20[/rbutton][rbutton]Advantage::knowYourRoll1;2d20kh1[/rbutton][rbutton]Disadvantage::knowYourRoll1;2d20kl1[/rbutton]
+
+  --X| DONE
+
+  --:knowYourRoll1|
+
+  --=AttackRoll|[&reentryval] + @{spell_attack_bonus} [Spell Attack Bonus]
+
+  -->CheckBless|
+  -->Bardic|
+  --:AfterBardic|
+
+  --~HowFarAway|distance;@{selected|token_id};@{target|token_id}
+  --=HowFar|[$HowFarAway] * 5
+  --?[$HowFar] -gt 120|tooFar
+
+  --+|[img]https://media1.giphy.com/media/12071fYBO811v2/giphy.gif[/img]
+  --#emoteText|[*S:character_name] attempts to hit [*T:character_name] with a Witch Bolt.
+  --#whisper|
+  -->RollResults|
+  --:DoneTalking|
+
+  --?[$AttackRollbase] -eq 20|Crit
+  --?[$AttackRollbase] -eq 1|Fumble
+  --=AttackRoll|[$AttackRoll] + [$BlessRoll] + [$BardicRoll]
+  --:TryAgain|
+  --?[$AttackRoll.Total] -ge @{target|npc_ac}|Hit
+
+  --:Miss|
+  --+Miss|Your attack missed!
+  -->DeductSpellSlot|
+  --X|
+
+
+  --:Hit|
+  --#whisper|
+  -->Vulnerable|lightning
+  -->RollDamage|
+  --+Hit!|Your attack hit for [$Damage] Lightning damage!
+  -->PlayEffects|[*S:t-id];[*T:t-id];burn-frost;burst-frost;beam-frost;Witch Bolt
+  --@token-mod| _ids [*S:t-id] _set statusmarkers|aura
+  --@alter|_target|@{target|token_id} _bar|1 _amount|-[$Damage]
+  --@token-mod| _ids @{target|token_id} _set statusmarkers|blue
+  -->DeductSpellSlot|
+  --X|
+
+
+  --:Fumble|
+  --=Fumblet|[T#Fumble-Table]
+  --+Fumble|The attack went really bad!
+  --+Bad Stuff| [$Fumblet.tableEntryText]
+  --=FDamage| 1d12
+  --=FCrit|1d12 + 1d12 [CRIT]
+  --*Possible Damage| Normal Damage is [$FDamage] and Crit Damage is [$FCrit].
+  -->DeductSpellSlot|
+  --X|
+
+  --:Crit|
+  -->Vulnerable|lightning
+  -->RollDamage|crit
+  -->PlayEffects|[*S:t-id];[*T:t-id];burn-frost;burst-frost;beam-frost;Witch Bolt
+  --+Critical Hit|You deal [$Damage] radiant damage CRITICAL HIT!
+  --@alter|_target|@{target|token_id} _bar|1 _amount|-[$Damage]
+  --@token-mod| _ids @{target|token_id} _set statusmarkers|blue
+  -->DeductSpellSlot|
+
+  
+  --:Vulnerable|
+  --&vulnd|
+  --?"[*T:npc_vulnerabilities]" -inc "[%1%]"|DoubleD
+  --?"[*T:npc_resistances]" -inc "[%1%]"|HalfD
+  --?"[*T:npc_immunities]" -inc "[%1%]"|immune
+  --<|
+  --:HalfD|
+  --&vulnd| \ 2 [Resistant]
+  --<|
+  --:DoubleD|
+  --&vulnd| * 2 [Vulnerable]
+  --<|
+
+  --:RollDamage|
+  --?[%1%] -eq crit|CritDamage
+  --=HowManyDice|[$SlotLevel]
+  --=Damage| [$HowManyDice]d12[&vulnd]
+  --<|
+  --:CritDamage|
+  --=HowManyDice|[$SlotLevel]
+  --=Damage| [$HowManyDice]d12 + [$HowManyDice]d12 [CRIT][&vulnd]
+  --<|
+
+  --:GetAndCheckSlotInformation|
+  --+Are you casting this new or are you using your action to reapply damage to the last target?|[rbutton]New::NewCast[/rbutton][rbutton]Reapply Damage to Old Target::Recast;1[/rbutton]
+  --X|
+  --:NewCast|
+  --?[*S:lvl1_slots_total] -gt 0|>SlotLevel;1
+  --?[*S:lvl2_slots_total] -gt 0|>SlotLevel;2
+  --?[*S:lvl3_slots_total] -gt 0|>SlotLevel;3
+  --?[*S:lvl4_slots_total] -gt 0|>SlotLevel;4
+  --?[*S:lvl5_slots_total] -gt 0|>SlotLevel;5
+  --?[*S:lvl6_slots_total] -gt 0|>SlotLevel;6
+  --?[*S:lvl7_slots_total] -gt 0|>SlotLevel;7
+  --?[*S:lvl8_slots_total] -gt 0|>SlotLevel;8
+  --?[*S:lvl9_slots_total] -gt 0|>SlotLevel;9
+  --<|
+  --:SlotLevel|
+  --=SlotLevel|[%1%]
+  --=SlotsTotal|0
+  --=SlotsExpended|[*S:lvl[$SlotLevel]_slots_expended]
+  --?[$SlotsExpended.Total] -eq [$SlotsTotal.Total]|NoSlotsLeft
+  --<|
+  --:Recast|
+  --=SlotLevel|[*S:WitchSlotLevel]
+  --=Recast|[&reentryval]
+  --<|
+
+
+  --:immune|
+  --+|@{target|token_name} is immune to radiant damage.  The Spell has no effect.
+  -->DeductSpellSlot|
+
+  --:DeductSpellSlot|
+  --?[$Recast] -eq 1|EndIt
+  --:DeductSlot|
+  --=SlotsLeft|[$SlotsExpended] - 1
+  --@setattr|_set _charid [*S:character_id] _lvl[$SlotLevel]_slots_expended|[$SlotsLeft] _silent
+  --@setattr|_charid [*S:character_id] _WitchTarget|[*T:t-id] _silent
+  --@setattr|_charid [*S:character_id] _WitchSlotLevel|[$SlotLevel] _silent
+  --+|Level [$SlotLevel] Slots Left: [$SlotsLeft] 
+  --:EndIt|
+  --X|Full Stop
+
+  --:NoSlotsLeft|
+  --+|[*S:character_name] has no level [$SlotLevel.Raw] spell slots available.
+  --#emoteText|[*S:character_name] tries to cast a spell but farts in instead.
+  -->PlayEffects|@{selected|token_id};none;bomb-acid;none;none;Fart
+  --X|NoSlotsLeftStop
+
+  --:PlayEffects|Parameters are : sourcetoken; targettoken; source effect; target effect; line effect; sound effect
+  --vtoken|[%1%] [%3%]
+  --vtoken|[%2%] [%4%]
+  --vbetweentokens|[%1%] [%2%] [%5%]
+  --@roll20AM|_audio,play,nomenu|[%6%]
+  --<|
+
+
+  --:CheckBless|
+  --=Bless|@{selected|repeating_savemod_$0_global_save_active_flag}
+  --?[$Bless] -ne 0|Blessed
+  --=BlessRoll|0
+  --<|
+  --:Blessed|
+  --=BlessRoll|1d4
+  --<|
+
+  --:Port|
+  --+Are you using Portant?.|[rbutton]No::AfterPort[/rbutton][rbutton]Portant 1::knowYourRoll2;1[/rbutton][rbutton]Portant 2::knowYourRoll2;2[/rbutton]
+  --X| DONE
+  --:knowYourRoll2|
+  --=Port|[&reentryval]
+  --?[$Port] -eq 1|Port1
+  --=AttackRoll| [*-MV-n2aBFpJndH0fCQAM:Port2] + [&DamageMod] + @{selected|pb} [PROF]
+  --=PortantRoll|[*-MV-n2aBFpJndH0fCQAM:Port2]
+  --=Port2|0
+  --@setattr|_charid @{Amorette Muckbuckle|character_id} _Port2|[$Port2] _silent
+  --?[$PortantRoll] -eq 20|Crit
+  -->AfterPort|
+  --:Port1|
+  --=AttackRoll| [*-MV-n2aBFpJndH0fCQAM:Port1] + [&DamageMod] + @{selected|pb} [PROF]
+  --=Port1|0
+  --=PortantRoll|[*-MV-n2aBFpJndH0fCQAM:Port1]
+  --@setattr|_charid @{Amorette Muckbuckle|character_id} _Port1|[$Port1] _silent
+  --?[$PortantRoll] -eq 20|Crit
+  -->AfterPort|
+
+  --:Bardic|
+  --=BardicRoll|0
+  --?@{selected|Bard} -eq 1|BardOn
+  -->AfterBardic|
+  --:BardOn|
+  --?[$Bless] -ne 0|BardBlessed
+  --+You rolled a [$AttackRoll.Base] for attack for a total of [$AttackRoll].  Do you want to use Bardic Inspiration?|[rbutton]Yes::BardYes[/rbutton][rbutton]No::AfterBardic[/rbutton]
+  --X| DONE
+  --:BardBlessed|
+  --+You rolled a [$AttackRoll.Base] for attack for a total of [$AttackRoll].  You rolled [$BlessRoll] for blessed. Do you want to use Bardic Inspiration?|[rbutton]Yes::BardYes[/rbutton][rbutton]No::AfterBardic[/rbutton]
+  --X| DONE
+  --:BardYes|
+  --=BardLess20|[*S:BobBardLevel] \ 5 * 2 + 6
+  --?[*S:BobBardLevel] -lt 20|>BardicRoll;[$BardLess20]
+  --?[*S:BobBardLevel] -eq 20|>BardicRoll;12
+  -->AfterBardic|
+  --:BardicRoll|
+  --+|Here
+  --=BardDie|[%1%]
+  --=BardicRoll|1d[$BardDie]
+  --+|Roll [$BardicRoll]
+  --@setattr|_charid @{selected|character_id} _Bard|0 _silent
+  --<|
+
+  --:RollResults|
+  --&BardicRollResult|
+  --&BlessRollResult|
+  --?[$BardicRoll] -eq 0|NoBardResult
+  --&BardicRollResult|You rolled [$BardicRoll] from bardic inspiration.
+  --:NoBardResult|
+  --?[$BlessRoll] -eq 0|NoBlessTalk
+  --&BlessRollResult|You rolled [$BlessRoll] from being blessed.
+  --:NoBlessTalk|
+  --+Attack Roll|You rolled a [$AttackRoll] to hit.[&BardicRollResult][&BlessRollResult]
+  --<|
+
+  --:tooFar|
+  --+|The target is too far away. 
+  --X|
+
+}}

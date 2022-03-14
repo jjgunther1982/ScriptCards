@@ -1,0 +1,54 @@
+!scriptcard {{ 
+
+--/|                >>>>> Formatting <<<<< 
+  --#titlecardbackgroundimage|linear-gradient(360deg, rgba(2,0,36,1) 0%, rgba(0,227,208,1) 100%); 
+  --#emoteBackground|#transparent
+  --#titleCardBackground|#00e3d0
+  --#titlefontsize|1.75em
+  --#titlefontlineheight|1.75em
+  --#titleFontColor|white
+  --#titlefontface|Shadows Into Light
+  --#subtitleFontSize|12px
+  --#subtitleFontFace|Verdana
+  --#evenRowBackground|#B6AB91
+  --#evenRowFontColor|#000000
+  --#oddRowBackground|#CEC7B6
+  --#oddRowFontColor|#000000
+
+
+  --#title|Identify
+  --#leftsub|Utility Spell
+  --#rightsub|Range: Touch
+  --#sourceToken|@{selected|token_id}
+  -->GetAndCheckSlotInformation|
+  -->CheckForPearl
+  --#emoteText|@{selected|token_name} uses an owl feather and a pearl worth 100 gold to identify something.
+  --+|You choose one object that you must touch throughout the casting of the spell. If it is a magic item or some other magic-imbued object, you learn its properties and how to use them, whether it requires attunement to use, and how many charges it has, if any. You learn whether any spells are affecting the item and what they are. If the item was created by a spell, you learn which spell created it. If you instead touch a creature throughout the casting, you learn what spells, if any, are currently affecting it.
+  -->DeductSpellSlot|
+
+
+  --:GetAndCheckSlotInformation|
+  --=SlotLevel|1
+  --=SlotsTotal|0
+  --=SlotsExpended|[*S:lvl[$SlotLevel]_slots_expended]
+  --?[$SlotsExpended.Total] -eq [$SlotsTotal.Total]|NoSlotsLeft
+  --<|
+
+  --:DeductSpellSlot|
+  --=SlotsExpended|[$SlotsExpended] - 1
+  --@setattr|_charid [*S:character_id] _lvl[$SlotLevel]_slots_expended|[$SlotsExpended] _silent
+  --+|Level [$SlotLevel] Slots Left: [$SlotsExpended] 
+  --X|Full Stop
+
+  --:NoSlotsLeft|
+  --+|[*S:character_name] has no level [$SlotLevel.Total] spell slots available.
+  --#emoteText|[*S:character_name] tries to cast a spell but farts in instead.
+  --X|NoSlotsLeftStop
+
+  --:CheckForPearl|
+  --?@{selected|repeating_resource_$0_resource_right} -lt 1|NoPearl
+  --<|
+  --:NoPearl|
+  --+|You need a pearl worth at least 100gp to cast this spell.
+  --#emoteText|Amorette says "where did I put that blasted pearl?"
+}}

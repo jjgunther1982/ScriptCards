@@ -1,0 +1,188 @@
+!scriptcards{{
+  --#sourceToken|@{selected|token_id}
+  --#targetToken|@{target|token_id}
+  --#reentrant|@{selected|character_id} 
+
+--/|                >>>>> Formatting <<<<< 
+  --#titlecardbackgroundimage|linear-gradient(360deg, rgba(2,0,36,1) 0%, rgba(0,227,208,1) 100%); 
+  --#emoteBackground|#transparent
+  --#titleCardBackground|#00e3d0
+  --#titlefontsize|1.75em
+  --#titlefontlineheight|1.75em
+  --#titleFontColor|white
+  --#titlefontface|Shadows Into Light
+  --#subtitleFontSize|12px
+  --#subtitleFontFace|Verdana
+  --#evenRowBackground|#B6AB91
+  --#evenRowFontColor|#000000
+  --#oddRowBackground|#CEC7B6
+  --#oddRowFontColor|#000000
+  --#whisper|self,gm
+  --:FB|
+  --#title|Fire Bolt
+  --#rightsub|Ranged Spell
+  --#leftsub|120 Feet
+
+  --+Choose an attack roll type.|[rbutton]Standard::knowYourRoll1;1d20[/rbutton][rbutton]Advantage::knowYourRoll1;2d20kh1[/rbutton][rbutton]Disadvantage::knowYourRoll1;2d20kl1[/rbutton]
+
+  --X| DONE
+
+  --:knowYourRoll1|
+
+  --=AttackRoll|[&reentryval] + @{spell_attack_bonus} [Spell Attack Bonus]
+
+  -->CheckBless|
+  -->Bardic|
+  --:AfterBardic|
+
+  --=HowManyDice|[*S:level] + 1 \ 6 + 1
+
+  --~HowFarAway|distance;@{selected|token_id};@{target|token_id}
+  --=HowFar|[$HowFarAway] * 5
+  --?[$HowFar] -gt 120|tooFar
+
+
+  --#emoteText|@{selected|token_name} hurls a mote of fire at @{target|token_name}.
+  --+|[img]https://media1.tenor.com/images/06fc36d4dd4780861261ac889ca5aa87/tenor.gif?itemid=21114552[/img]
+
+  --#whisper|
+  -->RollResults|
+  --:DoneTalking|
+
+  --?[$AttackRoll.base] -eq 20|Crit
+  --?[$AttackRoll.base] -eq 1|FumbleFB
+  --=AttackRoll|[$AttackRoll] + [$BlessRoll] + [$BardicRoll]
+  --?[$AttackRoll.Total] -ge @{target|npc_ac}|HitFB
+
+  --:MissFB|
+  --+Miss|Your spell missed!
+  --X|
+
+  --:HitFB|
+  -->RollDamageFB|
+  --:AfterHit|
+  -->PlayEffect|
+  --+Hit!|Your attack hit for [$Damage] Fire damage!
+  --@alter|_target|@{target|token_id} _bar|1 _amount|-[$Damage]
+  --+|If the target has anything on them that is flamible that they are not wearing, it catches fire!!!
+  --X|
+
+  --:FumbleFB|
+  --=Fumblet|[T#Fumble-Table]
+  --+Fumble|The attack went really bad!
+  --+Bad Stuff| [$Fumblet.tableEntryText]
+  --=FDamage| 4d6
+  --=FCrit|4d6 + 4d6 [CRIT]
+  --*Possible Damage| Normal Damage is [$FDamage] and Crit Damage is [$FCrit].
+  --X|
+
+  --:Crit|
+  -->RollDamageFB|crit
+  --:AfterCrit|
+  -->PlayEffect|
+  --+Critical Hit|You deal [$Damage] fire damage CRITICAL HIT!
+  --@alter|_target|@{target|token_id} _bar|1 _amount|-[$Damage]
+  --+|If the target has anything on them that is flamible that they are not wearing, it catches fire!!!
+  --X|
+
+  --:RollDamageFB|
+  --&vuln|
+  --?"@{target|npc_vulnerabilities}" -inc "fire"|DoubleD
+  --?"@{target|npc_resistances}" -inc "fire"|HalfD
+  --?"@{target|npc_immunities}" -inc "fire"|immune
+  --^gettoit|
+  --:HalfD|
+  --&vuln| \ 2 [Resistant]
+  --^gettoit|
+  --:DoubleD
+  --&vuln| * 2 [Vulnerable]
+  --:gettoit|
+  --?[%1%] -eq crit|CritDamageFB
+  --=Damage| [$HowManyDice]d10 + [*S:charisma_mod] [Radiant Soul][&vuln]
+  -->AfterHit|
+  --:CritDamageFB|
+  --=Damage| [$HowManyDice]d10 + [$HowManyDice]d10 [CRIT] + [*S:charisma_mod] [Radiant Soul][&vuln]
+  -->AfterCrit|
+
+  --:immune|
+  --+|@{target|token_name} is immune to fire damage.  The Spell has no effect.
+  --X|
+
+  --:CheckBless|
+  --=Bless|@{selected|repeating_savemod_$0_global_save_active_flag}
+  --?[$Bless] -ne 0|Blessed
+  --=BlessRoll|0
+  --<|
+  --:Blessed|
+  --=BlessRoll|1d4
+  --<|
+
+
+  --:Bardic|
+  --=BardicRoll|0
+  --?@{selected|Bard} -eq 1|BardOn
+  -->AfterBardic|
+  --:BardOn|
+  --?[$Bless] -ne 0|BardBlessed
+  --+You rolled a [$AttackRoll.Base] for attack for a total of [$AttackRoll].  Do you want to use Bardic Inspiration?|[rbutton]Yes::BardYes[/rbutton][rbutton]No::AfterBardic[/rbutton]
+  --X| DONE
+  --:BardBlessed|
+  --+You rolled a [$AttackRoll.Base] for attack for a total of [$AttackRoll].  You rolled [$BlessRoll] for blessed. Do you want to use Bardic Inspiration?|[rbutton]Yes::BardYes[/rbutton][rbutton]No::AfterBardic[/rbutton]
+  --X| DONE
+  --:BardYes|
+  --=BardLess20|[*S:BobBardLevel] \ 5 * 2 + 6
+  --?[*S:BobBardLevel] -lt 20|>BardicRoll;[$BardLess20]
+  --?[*S:BobBardLevel] -eq 20|>BardicRoll;12
+  -->AfterBardic|
+  --:BardicRoll|
+  --+|Here
+  --=BardDie|[%1%]
+  --=BardicRoll|1d[$BardDie]
+  --+|Roll [$BardicRoll]
+  --@setattr|_charid @{selected|character_id} _Bard|0 _silent
+  --<|
+
+  --:Port|
+  --+Are you using Portant?.|[rbutton]No::AfterPort[/rbutton][rbutton]Portant 1::knowYourRoll2;1[/rbutton][rbutton]Portant 2::knowYourRoll2;2[/rbutton]
+  --X| DONE
+  --:knowYourRoll2|
+  --=Port|[&reentryval]
+  --?[$Port] -eq 1|Port1
+  --=AttackRoll| [*-MV-n2aBFpJndH0fCQAM:Port2] + [&DamageMod] + @{selected|pb} [PROF]
+  --=PortantRoll|[*-MV-n2aBFpJndH0fCQAM:Port2]
+  --=Port2|0
+  --@setattr|_charid @{Amorette Muckbuckle|character_id} _Port2|[$Port2] _silent
+  --?[$PortantRoll] -eq 20|Crit
+  -->AfterPort|
+  --:Port1|
+  --=AttackRoll| [*-MV-n2aBFpJndH0fCQAM:Port1] + [&DamageMod] + @{selected|pb} [PROF]
+  --=Port1|0
+  --=PortantRoll|[*-MV-n2aBFpJndH0fCQAM:Port1]
+  --@setattr|_charid @{Amorette Muckbuckle|character_id} _Port1|[$Port1] _silent
+  --?[$PortantRoll] -eq 20|Crit
+  -->AfterPort|
+
+  --:PlayEffect|
+  --@roll20AM|_audio,play,nomenu|Fire Bolt
+  --vtoken|@{selected|token_id} burn-fire
+  --vtoken|@{target|token_id} explosion-fire
+  --vbetweentokens|@{selected|token_id} @{target|token_id} beam-fire
+  --<|
+
+  --:RollResults|
+  --&BardicRollResult|
+  --&BlessRollResult|
+  --?[$BardicRoll] -eq 0|NoBardResult
+  --&BardicRollResult|You rolled [$BardicRoll] from bardic inspiration.
+  --:NoBardResult|
+  --?[$BlessRoll] -eq 0|NoBlessTalk
+  --&BlessRollResult|You rolled [$BlessRoll] from being blessed.
+  --:NoBlessTalk|
+  --+Attack Roll|You rolled a [$AttackRoll] to hit.[&BardicRollResult][&BlessRollResult]
+  --<|
+
+  --:tooFar|
+  --+|The target is too far away. 
+  --X|
+
+}}

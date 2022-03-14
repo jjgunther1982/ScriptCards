@@ -1,0 +1,78 @@
+!scriptcards{{
+  --:PS|
+
+  --#sourceToken|@{selected|token_id}
+  --#targetToken|@{target|token_id}
+
+
+--/|                >>>>> Formatting <<<<< 
+  --#titlecardbackgroundimage|linear-gradient(360deg, rgba(2,0,36,1) 0%, rgba(0,227,208,1) 100%); 
+  --#emoteBackground|#transparent
+  --#titleCardBackground|#00e3d0
+  --#titlefontsize|1.75em
+  --#titlefontlineheight|1.75em
+  --#titleFontColor|white
+  --#titlefontface|Shadows Into Light
+  --#subtitleFontSize|12px
+  --#subtitleFontFace|Verdana
+  --#evenRowBackground|#B6AB91
+  --#evenRowFontColor|#000000
+  --#oddRowBackground|#CEC7B6
+  --#oddRowFontColor|#000000
+
+  --#title|Poison Spray
+  --#rightsub|Ranged Spell  DC = @{selected|spell_save_dc}
+  --#leftsub|10 Feet
+
+  --~HowFarAway|distance;@{selected|token_id};@{target|token_id}
+  --=HowFar|[$HowFarAway] * 5
+  --?[$HowFar] -gt 10|tooFar
+
+  --#emoteText| @{selected|token_name} extends their hand at @{target|token_name}.  A puff of noxious gas extends from @{selected|token_name}'s palm and heads toward @{target|token_name}.
+  --+|[img]https://media1.tenor.com/images/ce773669de2b54738b13d7d572572c3f/tenor.gif?itemid=17204222[/img]
+  --=DC|@{selected|spell_save_dc}
+  --=SavingThrow|1d20 + @{target|constitution_save_bonus}
+  -->PlayEffects|glow-acid;beam-acid;bubbling-acid;Poison Spray
+  --+|@{target|token_name} made a [$SavingThrow] Constitution Saving Throw.  [$DC] was required.
+  --?[$SavingThrow] -ge [$DC]|Miss
+
+  --=Dice|@{selected|level} \ 5 + 1
+  --:RollDamage|
+  --&vuln|
+  --?"@{target|npc_vulnerabilities}" -inc "poison"|DoubleD
+  --?"@{target|npc_resistances}" -inc "poison"|HalfD
+  --^gettoit|
+  --:HalfD|
+  --&vuln| \ 2 [Resistant]
+  --^gettoit|
+  --:DoubleD|
+  --&vuln| * 2 [Vulnerable]
+  --:gettoit|
+  --=Damage| [$Dice]d12[&vuln]
+
+  --:Hit|
+  --+Hit|@{target|token_name} failed their saving throw and took [$Damage] poison damage.
+  --?"@{target|npc_immunities}" -inc "poison"|immune  //Checks if target is immune if hit.
+  --@alter|_target|@{target|token_id} _bar|1 _amount|-[$Damage]  
+  --X|
+
+  --:Miss|
+  --+Miss|@{target|token_name} succeeded their saving throw.  The poison cloud had no effect.
+  --X|
+
+  --:immune|
+  --+|@{target|token_name} is immune to poison damage.  The Spell has no effect.
+  --X|
+
+  --:PlayEffects|Parameters are : source effect; target effect; line effect; sound effect
+  --vtoken|@{selected|token_id} [%1%]
+  --vtoken|@{target|token_id} [%2%]
+  --vbetweentokens|@{selected|token_id} @{target|token_id} [%3%]
+  --@roll20AM|_audio,play,nomenu|[%4%]
+  --<|
+
+  --:tooFar|
+  --+|The target is too far away. 
+  --X|
+
+}}

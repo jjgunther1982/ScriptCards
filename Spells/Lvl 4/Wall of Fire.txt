@@ -1,0 +1,71 @@
+!scriptcards{{
+  --#sourceToken|@{selected|token_id}
+  --#reentrant|@{selected|character_id}
+
+--/|                >>>>> Formatting <<<<< 
+  --#titlecardbackgroundimage|linear-gradient(360deg, rgba(2,0,36,1) 0%, rgba(0,227,208,1) 100%); 
+  --#emoteBackground|#transparent
+  --#titleCardBackground|#00e3d0
+  --#titlefontsize|1.75em
+  --#titlefontlineheight|1.75em
+  --#titleFontColor|white
+  --#titlefontface|Shadows Into Light
+  --#subtitleFontSize|12px
+  --#subtitleFontFace|Verdana
+  --#evenRowBackground|#B6AB91
+  --#evenRowFontColor|#000000
+  --#oddRowBackground|#CEC7B6
+  --#oddRowFontColor|#000000
+
+  --#title|Wall of Fire
+  --#rightsub|Ranged Spell
+  --#leftsub|150 Feet
+
+
+  -->GetAndCheckSlotInformation|
+
+  --#emoteText|
+  --+|[*S:t-name] creates a wall of fire.  The wall can bee a line 60 feet long, 20 feet high, and 1 foot thick or a circle 20 feet in diameter, 20 feet high, and 1 foot thick.
+  --+Spell Token|Use the Hunger of Hadar spell token to show the location.
+  --@act| -1| 10| _Wall of Fire Pamorette
+  --@token-mod| _ids [*S:t-id] _set statusmarkers|aura
+  -->PlayEffects|[*S:t-id];none;burst-death;none;none;Fire
+  -->DeductSpellSlot|
+
+  --:NoSlotsLeft|
+  --+|[*S:character_name] has no level [$SlotLevel.Raw] spell slots available.
+  --#emoteText|[*S:character_name] tries to cast a spell but farts in instead.
+  --X|NoSlotsLeftStop
+
+  --:DeductSpellSlot|
+  --=SlotsLeft|[$SlotsExpended] - 1
+  --@setattr|_charid [*S:character_id] _lvl[$SlotLevel]_slots_expended|[$SlotsLeft] _silent
+  --+|Spell Slots Left: [$SlotsLeft] 
+  --X|Full Stop
+
+  --:PlayEffects|Parameters are : sourcetoken; targettoken; source effect; target effect; line effect; sound effect
+  --@token-mod| _ids [*[%2%]:t-id] _set statusmarkers|
+  --vtoken|[%1%] [%3%]
+  --vtoken|[%2%] [%4%]
+  --vbetweentokens|[%1%] [%2%] [%5%]
+  --@roll20AM|_audio,play,nomenu|[%6%]
+  --<|
+
+  --:GetAndCheckSlotInformation|
+  --?[*S:lvl1_slots_total] -gt 0|>SlotLevel;1
+  --?[*S:lvl2_slots_total] -gt 0|>SlotLevel;2
+  --?[*S:lvl3_slots_total] -gt 0|>SlotLevel;3
+  --?[*S:lvl4_slots_total] -gt 0|>SlotLevel;4
+  --?[*S:lvl5_slots_total] -gt 0|>SlotLevel;5
+  --?[*S:lvl6_slots_total] -gt 0|>SlotLevel;6
+  --?[*S:lvl7_slots_total] -gt 0|>SlotLevel;7
+  --?[*S:lvl8_slots_total] -gt 0|>SlotLevel;8
+  --?[*S:lvl9_slots_total] -gt 0|>SlotLevel;9
+  --<|
+  --:SlotLevel|
+  --=SlotLevel|[%1%]
+  --=SlotsTotal|0
+  --=SlotsExpended|[*S:lvl[$SlotLevel]_slots_expended]
+  --?[$SlotsExpended.Total] -eq [$SlotsTotal.Total]|NoSlotsLeft
+  --<|
+}}

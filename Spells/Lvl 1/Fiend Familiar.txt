@@ -1,0 +1,76 @@
+!scriptcard {{ 
+
+--/|                >>>>> Formatting <<<<< 
+  --#titlecardbackgroundimage|linear-gradient(360deg, rgba(2,0,36,1) 0%, rgba(0,227,208,1) 100%); 
+  --#emoteBackground|#transparent
+  --#titleCardBackground|#00e3d0
+  --#titlefontsize|1.75em
+  --#titlefontlineheight|1.75em
+  --#titleFontColor|white
+  --#titlefontface|Shadows Into Light
+  --#subtitleFontSize|12px
+  --#subtitleFontFace|Verdana
+  --#evenRowBackground|#B6AB91
+  --#evenRowFontColor|#000000
+  --#oddRowBackground|#CEC7B6
+  --#oddRowFontColor|#000000
+  --#whisper|self,gm
+  --#reentrant|Spell
+
+  --#title|Find Familiar
+  --#leftsub|Utility Spell
+  --#rightsub|Range: 10 feet Cost: 10 gp
+  --#sourceToken|@{selected|token_id}
+  -->GetAndCheckSlotInformation|
+  -->GetGoldInformation|
+  --+What Animal do you want to summon?|
+  --+|[rbutton]Bat::WhatAnimal;A bat appears from the flames, flying around and eventually landing on @{selected|token_name}'s shoulder.[/rbutton][rbutton]Cat::WhatAnimal;A cat jumps from the flames.  It lands on a nearby table, slowly knocking everything off and laying down. [/rbutton][rbutton]Crab::WhatAnimal;A crab crawls out of them flames and to your feet awaiting direction.[/rbutton][rbutton]Frog::WhatAnimal;A frog leaps from the flames and onto the floor.  It hops over to @{selected|token_name} awaiting her commands. [/rbutton][rbutton]Hawk::WhatAnimal;A hawk flies from the flames, swooping down and landing on @{selected|token_name}'s arm. [/rbutton][rbutton]Lizard::WhatAnimal;A lizard scurries from the flames and into @{selected|token_name}'s pocket. [/rbutton][rbutton]Octopus::WhatAnimal;An octopus crawls from the flames and up @{selected|token_name}'s body.  Eventually the octopus wraps its tentacles around @{selected|token_name}'s arm. [/rbutton][rbutton]Owl::WhatAnimal;An owl flies from the flames, swooping down and landing on @{selected|token_name}'s arm.  It looks at @{selected|token_name} and says "who"[/rbutton][rbutton]Poisonous Snake::WhatAnimal;A poisonous snake slithers from the flames.  It slithers towards @{selected|token_name}, up her body until it coils around her arm. [/rbutton][rbutton]Fish::WhatAnimal;A fish flops out of the flames and onto the floor.  @{selected|token_name} begins to ask herself why she chose a fish. [/rbutton][rbutton]Rat::WhatAnimal;A rat scurries from the flams and into @{selected|token_name}'s pocket. [/rbutton][rbutton]Raven::WhatAnimal;A raven flies from the flames, swooping down and landing on @{selected|token_name}'s arm. [/rbutton][rbutton]Sea Horse::WhatAnimal;A sea horse floats out of them flames and back into them, never to be seen again. [/rbutton][rbutton]Spider::WhatAnimal;A spider crawls from the flames and into @{selected|token_name}'s pocket. [/rbutton][rbutton]Weasel::WhatAnimal;A weasel scurries from the flames to @{selected|token_name}'s feet awaiting direction. [/rbutton]
+  --X|
+  --:WhatAnimal|
+  --#whisper|
+  --#emoteText|@{selected|token_name} thows 10 gold worth of charcoal, incense, and herbs into a brass brazier.  [&reentryval]
+  --=GoldF|[$GoldC] - 10
+  --+|@{selected|token_name} has [$GoldF] gold left.
+  --@setattr|_charid [*S:character_id] _gp|[$GoldF] _silent
+  -->PlayEffects|none;none;none;none;none;Find Familiar
+  -->DeductSpellSlot|
+
+
+
+  --:GetGoldInformation|
+  --=GoldC|@{selected|GP}
+  --?[$GoldC] -lt  10|NotEnough
+  --<|
+
+  --:NotEnough|
+  --+|You only have [$GoldC] gold.
+  --+|Go Get More Money before you can cast this spell.
+  --X|
+
+  --:GetAndCheckSlotInformation|
+  --=SlotLevel|1
+  --=SlotsTotal|0
+  --=SlotsExpended|[*S:lvl[$SlotLevel]_slots_expended]
+  --?[$SlotsExpended.Total] -eq [$SlotsTotal.Total]|NoSlotsLeft
+  --<|
+
+  --:DeductSpellSlot|
+  --=SlotsExpended|[$SlotsExpended] - 1
+  --@setattr|_charid [*S:character_id] _lvl[$SlotLevel]_slots_expended|[$SlotsExpended] _silent
+  --+|Level [$SlotLevel] Slots Left: [$SlotsExpended] 
+  --X|Full Stop
+
+  --:NoSlotsLeft|
+  --+|[*S:character_name] has no level [$SlotLevel.Total] spell slots available.
+  --#emoteText|[*S:character_name] tries to cast a spell at [*T:character_name] but farts in instead.
+  -->PlayEffects|@{selected|token_id};none;bomb-acid;none;none;Fart
+  --X|NoSlotsLeftStop
+
+  --:PlayEffects|Parameters are : sourcetoken; targettoken; source effect; target effect; line effect; sound effect
+  --vtoken|[%1%] [%3%]
+  --vtoken|[%2%] [%4%]
+  --vbetweentokens|[%1%] [%2%] [%5%]
+  --@roll20AM|_audio,play,nomenu|[%6%]
+  --<|
+
+}}

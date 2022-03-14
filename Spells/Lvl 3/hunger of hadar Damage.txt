@@ -1,0 +1,77 @@
+!scriptcards{{
+  --#sourceToken|@{selected|token_id}
+  --#reentrant|Spell
+
+--/|                >>>>> Formatting <<<<< 
+  --#titlecardbackgroundimage|linear-gradient(360deg, rgba(2,0,36,1) 0%, rgba(0,227,208,1) 100%); 
+  --#emoteBackground|#transparent
+  --#titleCardBackground|#00e3d0
+  --#titlefontsize|1.75em
+  --#titlefontlineheight|1.75em
+  --#titleFontColor|white
+  --#titlefontface|Shadows Into Light
+  --#subtitleFontSize|12px
+  --#subtitleFontFace|Verdana
+  --#evenRowBackground|#B6AB91
+  --#evenRowFontColor|#000000
+  --#oddRowBackground|#CEC7B6
+  --#oddRowFontColor|#000000
+  --#whisper|GM
+  --#title|Hunger of Hadar
+
+
+  --#emoteText|[*S:t-name] must pay the price of the Hunger of Hadar.
+  --+|[rbutton]Starting Turn::Start[/rbutton][rbutton]Ending Turn::Ending[/rbutton]
+  --X|
+  --:Start|
+  --#whisper| 
+  -->Vuln|cold
+  -->RollDamage|
+  --+Start|[*S:t-name] started their turn in the Hunger of Hadar.  They are chilled from the void.
+  --+Damage|[*S:t-name] took [$Damage] Cold Damage.
+  --@alter|_target|[*S:t-id] _bar|1 _amount|-[$Damage]
+  --X|
+
+  --:Ending|
+
+  --+Choose an save roll type.|[rbutton]Standard::knowYourRoll1;1d20[/rbutton][rbutton]Advantage::knowYourRoll1;2d20kh1[/rbutton][rbutton]Disadvantage::knowYourRoll1;2d20kl1[/rbutton]
+
+  --X| DONE
+
+  --:knowYourRoll1|
+  --#whisper|
+  --=Save|[&reentryval] + [*S:dexterity_save_bonus] [DEX]
+  --=DC|[*-MjKuHmh7eS3Kh472t6H:spell_save_dc]
+  -->Vuln|acid
+  -->RollDamage|
+  --+Roll|[*S:t-name] made a [$Save] Dexterity saving throw.  They needed [$DC].
+  --?[$Save] -ge [$DC]|Save
+  --+Hit|[*S:t-name] succumbs to the milky, otherwordly tentacles rubbing against it and takes [$Damage] acid damage.
+  --@alter|_target|[*S:t-id] _bar|1 _amount|-[$Damage]
+  --X|
+  --:Save|
+  --+Save|[*S:t-name] dodges the tentacles of Hungar of Hadar.
+  --X|
+
+
+  --:Vuln|
+  --&vuln|
+  --?"@{selected|npc_vulnerabilities}" -inc "[%1%]"|DoubleD
+  --?"@{selected|npc_resistances}" -inc "[%1%]"|HalfD
+  --?"@{selected|npc_immunities}" -inc "[%1%]"|immune
+  --^gettoit|
+  --:HalfD|
+  --&vuln| \ 2 [Resistant]
+  --^gettoit|
+  --:DoubleD
+  --&vuln| * 2 [Vulnerable]
+  --:gettoit|
+  --<|
+
+  --:RollDamage|
+  --=Damage|2d6[&vuln]
+  --<|
+
+
+
+}}

@@ -1,0 +1,236 @@
+!scriptcard {{ 
++++5ETools+++
+  --#title|Eldritch Blast
+  --#reentrant|@{selected|character_id}
+  --#sourceToken|@{selected|token_id}
+
+--/|                >>>>> Formatting <<<<<
+  --#emoteBackground|#transparent
+  --#titleCardBackground|#b600f2
+  --#titlefontsize|1.75em
+  --#titlefontlineheight|1.75em
+  --#titleFontColor|white
+  --#titlefontface|Shadows Into Light
+  --#subtitleFontSize|12px
+  --#subtitleFontFace|Verdana
+  --#evenRowBackground|#B6AB91
+  --#evenRowFontColor|#000000
+  --#oddRowBackground|#CEC7B6
+  --#oddRowFontColor|#000000
+  --#whisper|self,gm
+
+
+  --=SlotLevel|[*S:level] \ 5 + 1
+  
+  --=MissileCount|[$SlotLevel]
+  --=DisplayCount|1
+  --=MissileDamage|0
+  --#leftsub|Cantrip
+  --#rightsub|Ranged Spell Attack
+  --#emoteText|@{selected|character_name} fires [$MissileCount.Raw] Eldritch Blasts!
+
+  --:MissileLoop|
+  --?[$DisplayCount] -gt 1|NextTarget
+  --+Target|[rbutton]Click this button to select your first target.::DoIt;&#64;{target|token_id}[/rbutton] 
+  --X|
+  --:NextTarget|
+  --+Target|[rbutton]Click this button to select your next target.::DoIt;&#64;{target|token_id}[/rbutton] 
+  --X|
+  --:DoIt|
+  -->FireMissile|[$DisplayCount.Raw]
+  --:AfterMissile|
+  --=DisplayCount|[$DisplayCount] + 1
+  --?[$DisplayCount] -le [$SlotLevel]|MissileLoop
+  --+Total|Total damage is [$MissileDamage]
+  -->DeductSpellSlot|
+  --X|
+
+  --:FireMissile|
+  --&ThisTarget|[&reentryval]
+  --#targettoken|[&reentryval]
+
+  --~HowFarAway|distance;@{selected|token_id};[*[&ThisTarget]:t-id]
+  --=HowFar|[$HowFarAway] * 5
+  --?[$HowFar] -gt 120|tooFar
+
+  --#whisper|self,gm
+  --+Choose an attack roll type for [*[&ThisTarget]:character_name].|[rbutton]Standard::knowYourRoll1;1d20[/rbutton][rbutton]Advantage::knowYourRoll1;2d20kh1[/rbutton][rbutton]Disadvantage::knowYourRoll1;2d20kl1[/rbutton]
+
+  --X| DONE
+  --:knowYourRoll1|
+  -->Lib5E_CheckBless|
+  --=AttackRoll|[&reentryval] + [*S:spell_attack_bonus][&BlessRoll]
+  -->Lib5E_Bardic|
+
+  --#whisper|
+  -->Lib5E_RollResults|
+  --&DamageType|force
+  --?[$AttackRoll.Base] -eq 20|Crit
+  --?[$AttackRoll.Base] -eq 1|Fumble
+  --=TotalRoll|[$AttackRoll] + [$BardicRoll]
+  --?[$TotalRoll.Total] -lt [*[&ThisTarget]:npc_AC]|Miss
+
+  --:Hit|
+  --+Hit|[*[&ThisTarget]:t-name]
+  -->Lib5E_Vulnerable|
+  -->RollDamage|
+  --=MissileDamage|[$MissileDamage] + [$ThisMissile]
+  --+Missile|[$DisplayCount.Raw] Hits [*[&ThisTarget]:character_name] for [$ThisMissile] [b]force[/b] damage
+  -->PlayEffects|@{selected|token_id};[&ThisTarget];none;burst-magic;beam-magic;Missile
+  --//ApplyDamageTokenmod|[&ThisTarget];1;-[$ThisMissile.Raw]
+  --//ApplyDamageAlterbars|[&ThisTarget];1;[$ThisMissile.Raw]
+  -->ApplyDamageScript|[&ThisTarget];1;[$ThisMissile.Raw]
+  -->AfterMissile|
+
+
+  --:Miss|
+  --+Miss|Your attack missed [*[&ThisTarget]:t-name]!
+  -->AfterMissile|
+
+  --:Fumble|
+  --=Fumblet|[T#Fumble-Table]
+  --+Fumble|The attack went really bad against [*[&ThisTarget]:t-name]!
+  -->PlayEffects|none;none;none;none;none;Failure
+  --+Bad Stuff| [$Fumblet.tableEntryText]
+  --=FDamage|1d10
+  --=FCrit|1d10 + 1d10 [CRIT]
+  --*Possible Damage| Normal Damage is [$FDamage] and Crit Damage is [$FCrit].
+  -->AfterMissile|
+
+  --:Crit|
+  -->Lib5E_Vulnerable|
+  -->RollDamage|crit
+  --:AfterCrit|
+  --=MissileDamage|[$MissileDamage] + [$ThisMissile]
+  --+Crit|[*[&ThisTarget]:t-name]
+  --+Missile|[$DisplayCount.Raw] Hits [*[&ThisTarget]:character_name] for [$ThisMissile] [b]force[/b] damage
+  -->PlayEffects|@{selected|token_id};[&ThisTarget];none;burst-magic;beam-magic;Missile
+  --//ApplyDamageTokenmod|[&ThisTarget];1;-[$ThisMissile.Raw]
+  --//ApplyDamageAlterbars|[&ThisTarget];1;[$ThisMissile.Raw]
+  -->ApplyDamageScript|[&ThisTarget];1;[$ThisMissile.Raw]
+  -->AfterMissile|
+
+  --:tooFar|
+  --+|The target is too far away. 
+  -->AfterMissile|
+
+
+  --:DeductSpellSlot|
+  --X|Full Stop
+
+  --:PlayEffects|Parameters are : sourcetoken; targettoken; source effect; target effect; line effect; sound effect
+  --vtoken|[%1%] [%3%]
+  --vtoken|[%2%] [%4%]
+  --vbetweentokens|[%1%] [%2%] [%5%]
+  --@roll20AM|_audio,play,nomenu|[%6%]
+  --<|
+
+  --:ApplyDamageTokenmod|Parameters are tokenid;bar#;amount
+  --@token-mod| _ids [*[%2%]:token_id] _set bar[%2%]_value|[%3%]
+  --@token-mod|_ignore-selected _ids [%1%] _set bar[%2%]_value|[%3%]
+   --<|
+
+  --:ApplyDamageAlterbars|
+  --@alter|_target|[%1%] _bar|[%2%] _amount|-[%3%]
+  --+Eblastbar|[*[%1%]:t-bar1_value]
+  --+Damage|[%3%]
+  --?[%3%] -lt [*[%1%]:t-bar1_value]|NoSpectThisAttack
+  -->Lib5E_Specter|[&ThisTarget];[%3%]
+  --:NoSpectThisAttack|
+  --<|
+
+  --:BuildAndAskTargets|
+  --&TargetString|
+  --=targetCount|1
+  --:TargetLoop|
+  --&TargetString|+t;target[$targetCount.Raw];Missile [$targetCount.Raw] Target
+  --=targetCount|[$targetCount.Raw] + 1
+  --?[$targetCount.Raw] -le [%1%]|>AddSeparator
+  --?[$targetCount.Raw] -le [%1%]|TargetLoop
+  --iPlease click the button below to select blast targets. The same target can be selected multiple times;Select [%1%] Targets|[&TargetString]
+  --/|
+  --<|
+
+  --:AddSeparator|
+  --&TargetString|+||
+  --<|
+
+  --:repellingBlast|
+  --&STid|@{selected|token_id}
+  --&TTid|[&ThisTarget]
+  --iYou hit target [*[&ThisTarget]:character_name];Click this button choose how many feet you want to knock them back.|q;howFar;How many feed?|10|5|0|
+  --=PushBack|[&howFar] \ 5
+  --:PUSH|
+
+    -->MOVE_TOKEN|[&STid];[&TTid];[$PushBack]
+    --+|[*[&STid]:t-name] has pushed [*[&TTid]:t-name] back [&howFar] feet!
+
+--:MOVE_TOKEN|STokenid, TTokenId, Units
+  --&TId1|[%1%]
+  --&TId2|[%2%]
+  --&Units|[%3%]
+
+  --/| Angle function returns a string variable (&) with lots of decimal points.
+  --~A|math;angle;[&TId1];[&TId2]
+
+  --/| I've found that TokenMod chokes on a movement angle with lots of decimal points, so rounding is needed
+  --/|$Ar will now contain a rounded integer version of &A
+  --~Ar|math;round;[&A]
+
+
+  --/|&Angle will end up being one of the common directions which may work better for grids
+  --?[$Ar] -gt 337.5 -or [$Ar] -le 22.5|&Angle;0
+  --?[$Ar] -gt 22.5 -and [$Ar] -le 67.5|&Angle;45
+  --?[$Ar] -gt 67.5 -and [$Ar] -le 112.5|&Angle;90
+  --?[$Ar] -gt 112.5 -and [$Ar] -le 157.5|&Angle;135
+  --?[$Ar] -gt 157.5 -and [$Ar] -le 202.5|&Angle;180
+  --?[$Ar] -gt 202.5 -and [$Ar] -le 247.5|&Angle;225
+  --?[$Ar] -gt 247.5 -and [$Ar] -le 292.5|&Angle;270
+  --?[$Ar] -gt 292.5 -and [$Ar] -le 337.5|&Angle;315
+
+  --/| Added for dealing with a SC 1.39a bug (returns negative angles beteen 270 and 360)
+  --?[$Ar] -gt -90 -and [$Ar] -le -67.5|&Angle;270
+  --?[$Ar] -gt -67.5 -and [$Ar] -le -22.5|&Angle;315
+  --?[$Ar] -gt -22.5 -and [$Ar] -le 0|&Angle;0
+
+  --&UnitsFactor|1
+  --?[&Angle] -eq 45|&UnitsFactor;1.4142
+  --?[&Angle] -eq 135|&UnitsFactor;1.4142
+  --?[&Angle] -eq 225|&UnitsFactor;1.4142
+  --?[&Angle] -eq 315|&UnitsFactor;1.4142
+
+  --=U|[&Units] * [&UnitsFactor] 
+
+  --*Angles|[&Angle] ([&A]) ([$Ar]) 
+  --/| Time to call the magic TokenMod function to make the target token move across the screen
+  --@token-mod|_move =[&Angle]|[$U.Raw]g _ids [&TId2] _ignore-selected
+
+  -->AfterMissile|
+
+
+  --:RollResults|
+  --&BardicRollResult|
+  --&BlessRollResult|
+  --?[$BardicRoll] -eq 0|NoBardResult
+  --&BardicRollResult|You rolled [$BardicRoll] from bardic inspiration.
+  --:NoBardResult|
+  --?[$BlessRoll] -eq 0|NoBlessTalk
+  --&BlessRollResult|You rolled [$BlessRoll] from being blessed.
+  --:NoBlessTalk|
+  --+Attack Roll|You rolled a [$AttackRoll] to hit.[&BardicRollResult][&BlessRollResult]
+  --<|
+
+  --:ApplyDamageScript|[&ThisTarget];1;Damage
+  --=Bar|[*[&ThisTarget]:t-bar1_value]
+  --?[%3%] -gt [$Bar]|=Damage;[$Bar]|=Damage;[%3%]
+  --&CharacterName|[*[&ThisTarget]:character_name]
+  --=CurrentHealth|-[*[&ThisTarget]:t-bar1_value]
+  --!t:[%1%]|bar[%2%]_value:-=[$Damage]
+  --?[*[&ThisTarget]:t-bar1_value] -le 0|Dead
+  --<|
+  --:Dead|
+  --@token-mod| _ids [%1%] _set bar[%2%]_value|0
+  -->Lib5E_Specter|[&ThisTarget];[$Damage]
+  --<|
+  
+}}

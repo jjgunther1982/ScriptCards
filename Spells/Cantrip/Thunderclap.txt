@@ -1,0 +1,178 @@
+!scriptcard  {{
+
+--/|                >>>>> Formatting <<<<< 
+  --#titlecardbackgroundimage|linear-gradient(360deg, rgba(2,0,36,1) 0%, rgba(0,227,208,1) 100%); 
+  --#emoteBackground|#transparent
+  --#titleCardBackground|#00e3d0
+  --#titlefontsize|1.75em
+  --#titlefontlineheight|1.75em
+  --#titleFontColor|white
+  --#titlefontface|Shadows Into Light
+  --#subtitleFontSize|12px
+  --#subtitleFontFace|Verdana
+  --#evenRowBackground|#B6AB91
+  --#evenRowFontColor|#000000
+  --#oddRowBackground|#CEC7B6
+  --#oddRowFontColor|#000000
+
+
+  --#title|Thunderclap
+  --#sourceToken|@{selected|token_id}
+  --#leftsub|Cantrip
+  --#rightsub|S : Range 5' Cube Around Self
+
+
+  --/|Get a spell slot level from the caster.
+  --=SpellLevel|1
+ --+|[c][b]Save DC @{selected|spell_save_dc} *[/c][/b]
+  --@roll20AM|_audio,play,nomenu|Thunderclap
+  --#emoteText|@{selected|token_name} furiously twerks, slamming her two monstrous butt cheeks together, causing a thunderous roar that can be heard up to 100 feet.
+
+  --=DamageDice|[*S:level] + 1 \ 6 + 1
+  --=Damage|[$DamageDice.Total]d6
+  --=HalfDamage|0
+
+ 
+
+  --/|Since we want to be able to hover over a roll and see the dice details, output the rolled damage at the
+  --/|top of the card. If all critters make their save, the half damage roll won't contain the details.
+  --+|[c][b]Damage Roll: [/b][$Damage][/c]
+  --+|&nbsp;
+
+ 
+
+  --/|Get all tokens on the page into the "alltokens" array
+  --~|array;pagetokens;alltokens;@{selected|token_id}
+
+ 
+
+  --/|Create the "inRange" array. It will have a blank item in it to begin with, which we will remove later.
+  --~|array;define;inRange;
+
+ 
+
+  --/|Loop through all of the tokens in "alltokens" to check their distance
+  --~tokenid|array;getfirst;alltokens
+  --?[&tokenid] -eq ArrayError|endOutput
+  --:loopCheck|
+
+ 
+
+  --/|Skip targets that are not on the token layer or that don't represent creatures
+  --?[*[&tokenid]:t-layer] -ne objects|continue
+  --?"[*[&tokenid]:t-represents]" -ninc "-"|continue
+
+ 
+
+ --/|Check the distance between the casting token and the current array token. 15 feet is 3 units
+    --~dist|distance;@{selected|token_id};[&tokenid]
+    --?[$dist] -eq 0 -or [$dist] -gt 1|continue
+ 
+
+  --/|If we didn't skip over this part, the token is within 10 feet, so add it to the inRange array
+  --~|array;add;inRange;[&tokenid]
+  --:continue|
+  --~tokenid|array;getnext;alltokens
+  --?[&tokenid] -ne ArrayError|loopCheck 
+
+  --/|Remove the dummy first item in the inRange array
+  --~|array;removeat;inRange;0
+
+ 
+
+  --/|Loop through the inRange tokens and roll saves for each one and apply damage
+  --~tokenid|array;getfirst;inRange
+  --?[&tokenid] -eq ArrayError|endOutput
+  --:loopDisplay|
+  -->MakeSavingThrow|[&tokenid];constitution;@{selected|spell_save_dc};[$Damage.Total];thunder;thisTokenDamage;saveResult;con
+  --+[*[&tokenid]:character_name]:|Save [$savingThrow] [r][$thisTokenDamage] thunder damage.[/r]
+  -->ApplyDamageTokenmod|[&tokenid];1;[$thisTokenDamage]
+ 
+
+  --/|Put a burst-magic visual effect on impacted tokens  
+  --vtoken|[&tokenid] burst-water
+
+ 
+
+  --/|Get the next token and continue the loop until we run out.
+  --~tokenid|array;getnext;inRange
+  --?[&tokenid] -ne ArrayError|loopDisplay
+ 
+
+  --:endOutput|
+
+  --X| 
+
+  --/|Subroutine to make saving throws and calculate damage amounts
+
+  --:MakeSavingThrow|tokenid;savetype;dc;damage;damagetype;damagevariable;saveresultvariable;shortabilityname
+
+  --?"X[*[%1%]:npc_[%8%]_save_base]" -eq "X"|>set_string;baseSaveBonus;|>set_string;baseSaveBonus; + + [*[%1%]:npc_[%8%]_save_base]
+
+  --=savingThrow|1d20 + [*[%1%]:[%2%]_save_bonus] [&baseSaveBonus]
+
+  --&dmgmult|
+
+  --?[$savingThrow] -ge [%3%]|>set_string;dmgmult; \ 2
+
+  --?[$savingThrow] -lt [%3%]|>set_string;[%7%];fail
+
+  --?[$savingThrow] -ge [%3%]|>set_string;dmgmult; * 0
+
+  --?"[*[%1%]:npc_resistances]" -inc "[%5%]" -and [$savingThrow] -lt [%3%]|>set_string;dmgmult; \ 2
+
+  --?"[*[%1%]:npc_resistances]" -inc "[%5%]" -and [$savingThrow] -ge [%3%]|>set_string;dmgmult; * 0
+
+  --?"[*[%1%]:npc_vulnerabilities]" -inc "[%5%]" -and [$savingThrow] -ge [%3%]|>set_string;dmgmult;
+
+  --?"[*[%1%]:npc_vulnerabilities]" -inc "[%5%]" -and [$savingThrow] -lt [%3%]|>set_string;dmgmult; * 2
+
+  --?"[*[%1%]:npc_immunities]" -inc "[%5%]"|>set_string;dmgmult; * 0
+
+    --=[%6%]|[%4%] [&dmgmult]
+
+  --<|
+
+  --:set_string|mod_variable;value
+
+  --&[%1%]|[%2%]
+
+  --<|
+
+ 
+
+  --/|Subroutine to apply damage with TokenMod. Could be replaced with alterbars or chatsetattr
+
+  --:ApplyDamageTokenmod|Parameters are tokenid;bar#;amount
+
+  --@token-mod|_ignore-selected _ids [%1%] _set bar[%2%]_value|-[%3%]
+
+  --<| 
+
+  --:GetAndCheckSlotInformation|
+  --=SlotLevel|[$SpellLevel]
+  --=SlotsTotal|[*S:lvl[$SlotLevel]_slots_total]
+   --=SlotsExpended|[*S:lvl[$SlotLevel]_slots_expended]
+  --?[$SlotsExpended.Total] -eq 0|NoSlotsLeft
+  --?[$SlotsExpended.Total] -gt [$SlotsTotal.Total]|NoSlotsLeft
+  --@roll20AM|_audio,play,nomenu|Thunder-Crash
+  --<| 
+
+  --:DeductSpellSlot|
+
+  --=SlotsExpended|[$SlotsExpended] -1 
+  --@setattr|_charid [*S:character_id] _lvl[$SlotLevel]_slots_expended|[$SlotsExpended] _silent
+ --=SlotsRemaining|[$SlotsTotal] - 1 
+--+|Level [$SpellLevel.Total] Spell Slots Left: [$SlotsExpended]  
+
+ --X| 
+
+  --:NoSlotsLeft|
+
+  --+|[b][*S:character_name] has no level [$SlotLevel.Total] spell slots available.[/b]
+
+  --X|NoSlotsLeftStop
+ 
+
+
+}}
