@@ -1,0 +1,71 @@
+!scriptcard {{ 
+  --#title|Hat of Wizardry
+  --#sourceToken|@{selected|token_id}
+  --#reentrant|@{selected|character_id}
+
+--/|                >>>>> Formatting <<<<<
+  --#emoteBackground|#transparent
+  --#titleCardBackground|#b600f2
+  --#titlefontsize|1.75em
+  --#titlefontlineheight|1.75em
+  --#titleFontColor|white
+  --#titlefontface|Shadows Into Light
+  --#subtitleFontSize|12px
+  --#subtitleFontFace|Verdana
+  --#evenRowBackground|#B6AB91
+  --#evenRowFontColor|#000000
+  --#oddRowBackground|#CEC7B6
+  --#oddRowFontColor|#000000
+  --#whisper|self,GM
+
+  -->GetAndCheckAmmoInformation|[*S:character_id];Hat of Wizardry [l];AmmoName;Ammo
+  -->CheckAmmo|[$Ammo]
+
+  --+|You can cast 1 spell from this list.  Once you cast the spell, you can't use the hat again until you have had a long rest.
+  --+Here are the discriptions of the spells|http://dnd5e.wikidot.com/spells:wizard
+
+  --+Click this when you are ready to procede.|[rbutton]Acid Splash::Ready;Acid Splash[/rbutton][rbutton]Blade Ward::Ready;Blade Ward[/rbutton][rbutton]Chill Touch::Ready;Chill Touch[/rbutton][rbutton]Control Flames::Ready;Control Flames[/rbutton][rbutton]Create Bonfire::Ready;Create Bonfire[/rbutton]
+  --+|[rbutton]Dancing Lights::Ready;Dancing Lights[/rbutton][rbutton]Fire Bolt::Ready;Fire Bolt[/rbutton][rbutton]Friends::Ready;Friends[/rbutton][rbutton]Frostbite::Ready;Frostbite[/rbutton]
+  --+|[rbutton]Gust::Ready;Gust[/rbutton][rbutton]Infestation::Ready;Infestation[/rbutton][rbutton]Light::Ready;Light[/rbutton][rbutton]Mage Hand::Ready;Mage Hand[/rbutton]
+  --+|[rbutton]Mending::Ready;Mending[/rbutton][rbutton]Message::Ready;Message[/rbutton][rbutton]Minor Illusion::Ready;Minor Illusion[/rbutton][rbutton]Mold Earth::Ready;Mold Earth[/rbutton][rbutton]Poison Spray::Ready;Poison Spray[/rbutton]
+  --+|[rbutton]Prestidigitation::Ready;Prestidigitation[/rbutton][rbutton]Ray of Frost::Ready;Ray of Frost[/rbutton][rbutton]Shocking Grasp::Ready;Shocking Grasp[/rbutton]
+  --+|[rbutton]Thunderclap::Ready;Thunderclap[/rbutton][rbutton]Toll the Dead::Ready;Toll the Dead[/rbutton][rbutton]True Strike::Ready;True Strike[/rbutton]
+  --X|
+  --:Ready|
+  --#whisper|
+  --#emoteText|[*S:t-name] cast [&reentryval] using the Hat of Wizardry.
+
+  -->DeductRations|
+
+--:GetAndCheckAmmoInformation|character_id;resourceName;Ammoname;Ammo
+--?"[%2%]" -eq "[*[%1%]:class_resource_name]"|_Lib5E_IsResourceClass
+--?"[%2%]" -eq "[*[%1%]:other_resource_name]"|_Lib5E_IsResourceOther
+--Rfirst|[%1%];repeating_resource
+--:_Lib5E_ResourceLoop|
+--?"[*R:resource_left_name]" -eq "[%2%]"|_Lib5E_IsResourceLeft
+--?"[*R:resource_right_name]" -eq "[%2%]"|_Lib5E_IsResourceRight
+--Rnext|
+--?"[*R:resource_left_name]" -ne "NoRepeatingAttributeLoaded"|_Lib5E_ResourceLoop
+--&[%3%]|NotFound --*IsNotFound| --&[%4%]|NotFound --=[%4%]|0 
+--<|
+--:_Lib5E_IsResourceClass| --*IsClass| --&[AmmoName]|class_resource_name --&[Ammo]|class_resource --=[Ammo]|[*[%1%]:class_resource] --<|
+--:_Lib5E_IsResourceOther| --*IsOther!| --&[AmmoName]|other_resource --&[Ammo]|other_resource --=[Ammo]|[*[%1%]:other_resource] --<|
+--:_Lib5E_IsResourceLeft| --*IsLeft| --&[AmmoName]|[*R>resource_left_name] --&[Ammo]|[*R>resource_left] --=[Ammo]|[*R:resource_left] --<|
+--:_Lib5E_IsResourceRight| --*IsRight| --&[AmmoName]|[*R>resource_right_name] --&[Ammo]|[*R>resource_right] --=[Ammo]|[*R:resource_right] --<|
+--<|
+
+  --:CheckAmmo|
+  --?[%1%] -lt 1|NoRations
+  --<|
+
+  --:NoRations|
+  --+|You need a long rest before you can use the hat of wizardry again..
+  --X|
+
+  --:DeductRations|
+  --+Hat of Wizardry|You can't use the Hat of Wizardry until you finish a long rest.
+  --@setattr|_charid [*S:character_id] _[&Ammo]|0 _silent
+  --X|
+}}
+
+  

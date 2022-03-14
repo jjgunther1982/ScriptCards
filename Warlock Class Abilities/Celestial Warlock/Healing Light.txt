@@ -1,0 +1,65 @@
+!scriptcards{{
+  --#reentrant|@{selected|character_id} 
+  --#sourceToken|@{selected|token_id}
+  --#targetToken|@{target|token_id}
+  +++5ETools+++
+
+--/|                >>>>> Formatting <<<<< 
+  --#titlecardbackgroundimage|linear-gradient(360deg, rgba(2,0,36,1) 0%, rgba(0,227,208,1) 100%); 
+  --#emoteBackground|#transparent
+  --#titleCardBackground|#00e3d0
+  --#titlefontsize|1.75em
+  --#titlefontlineheight|1.75em
+  --#titleFontColor|white
+  --#titlefontface|Shadows Into Light
+  --#subtitleFontSize|12px
+  --#subtitleFontFace|Verdana
+  --#evenRowBackground|#B6AB91
+  --#evenRowFontColor|#000000
+  --#oddRowBackground|#CEC7B6
+  --#oddRowFontColor|#000000
+  --#whisper|self,GM
+  --#title|Healing Light
+
+
+  -->Lib5E_FindResource|[*S:character_id];Healing Light;HealingName;HealingLeft
+  --?[$HealingLeft] -eq 0|NoCanDo
+
+  --+Healing amount|You have [$HealingLeft] dice (d6) left to heal with.  How many do you want to use?
+  --=HealLoop|0
+  --:LoopIt|
+  --=HealLoop|[$HealLoop] + 1
+  --?[$HealingLeft] -gt [$HealLoop]|
+  --+|[rbutton][$HealLoop.Raw]::healit;[$HealLoop.Raw][/rbutton]
+  --?[$HealingLeft] -gt [$HealLoop]|LoopIt
+  --X|
+  --:healit|
+  --#whisper|
+  --=HealingMax|[&reentryval]d6
+  --=HealingLeft|[$HealingLeft] - [&reentryval]
+  --=MaxHealth|[*T:t-bar1_max]
+  --=CurrentHealth|[*T:t-bar1_value]
+  --=HealthMissing|[$MaxHealth] - [$CurrentHealth]
+  --?[$HealingMax] -ge [$HealthMissing]|HealToMax
+  --+Healing|You healed [*T:t-name] for [$HealingMax] Health.
+  --=CurrentHealth|[$HealingMax] + [$CurrentHealth]
+  --+Current Health|[*T:t-name]'s current health is [$CurrentHealth]
+  --#emoteText|[*S:t-name] healed [*T:t-name]
+  --@alter|_target|@{target|token_id} _bar|1 _amount|[$HealingMax]
+  --@setattr|_charid [*S:character_id] _[&HealingLeft]|[$HealingLeft] _silent
+  --+Healing Light Left:[$HealingLeft]
+  --X|
+  --:HealToMax|
+  --+Healing|You healed [*T:t-name] for [$HealingMax] Health.
+  --+Max Healing|You healed [*T:t-name] to max health, [$MaxHealth] hp.
+  --#emoteText|[*S:t-name] healed [*T:t-name]
+  --@alter|_target|@{target|token_id} _bar|1 _amount|[*T:t-bar1_max]
+  --@setattr|_charid [*S:character_id] _[&HealingLeft]|[$HealingLeft] _silent
+
+  --+Healing Light Left:[$HealingLeft]
+  --X|
+  --:NoCanDo|
+  --#emoteText|Healing what?
+  --+None Left|You Don't Have Any Healing Light Left.
+  --X|
+}}
