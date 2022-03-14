@@ -1,0 +1,40 @@
+!Scriptcard {{ 
+
+  --#sourceToken|@{selected|token_id}
+  --#emoteBackground|#transparent
+  --#titleCardBackground|#ffea00
+  --#titlefontsize|1.75em
+  --#titlefontlineheight|1.75em
+  --#titleFontColor|white
+  --#titlefontface|Shadows Into Light
+  --#subtitleFontSize|12px
+  --#subtitleFontFace|Verdana
+  --#evenRowBackground|#B6AB91
+  --#evenRowFontColor|#000000
+  --#oddRowBackground|#CEC7B6
+  --#oddRowFontColor|#000000
+  --#sourceToken|@{selected|token_id}
+  --#whisper|self,gm
+  --+Choose|Choose your hex weapon.
+ --Rfirst|[*S:character_id];repeating_attack
+  --&PCAttacks|[br]
+  --?"[*R:atkname]" -ne "NoRepeatingAttributeLoaded"|[
+    --:PCAttacks_Display|
+      --?"X[*R:spelldesc_link]" -ne "X"|SKIP_SPELL_ATTACK
+      --~Weapons|string;before; ;[*R:atkname]
+
+      --?"[&PCAttacks]" -inc "[&Weapons]"|SKIP_SPELL_ATTACK
+      --&PCAttacks|+ [rbutton][&Weapons]::EXEC_PC_ATTACK;[&Weapons][/rbutton] 
+      --:SKIP_SPELL_ATTACK|
+      --Rnext|
+      --?"[*R:atkname]" -ne "NoRepeatingAttributeLoaded"|PCAttacks_Display
+
+      --+Weapons|[&PCAttacks]
+  --+|[rbutton]Pact Weapon::EXEC_PC_ATTACK;PactWeapon[/rbutton] 
+  --X|
+  --:EXEC_PC_ATTACK|
+  --#whisper|
+  --#emoteText|[*S:character_name] has chosen [&reentryval] to be their Hex Weapon.
+  --+|When they attack with that weapon, they can use their Charisma modifier, instead of Strength or Dexterity, for the attack and damage rolls. This benefit lasts until you finish a long rest.
+  --@setattr|_charid [*S:character_id] _hexweapon|[&reentryval] _silent
+}}

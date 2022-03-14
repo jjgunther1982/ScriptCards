@@ -1,0 +1,63 @@
+!scriptcards{{
+  --#reentrant|@{selected|character_id}
+--/|                >>>>> Formatting <<<<<
+  --#emoteBackground|#transparent
+  --#titleCardBackground|#b600f2
+  --#titlefontsize|1.75em
+  --#titlefontlineheight|1.75em
+  --#titleFontColor|white
+  --#titlefontface|Shadows Into Light
+  --#subtitleFontSize|12px
+  --#subtitleFontFace|Verdana
+  --#evenRowBackground|#B6AB91
+  --#evenRowFontColor|#000000
+  --#oddRowBackground|#CEC7B6
+  --#oddRowFontColor|#000000
+  --#whisper|self,GM
+
+  --#Title|Metamagic:Twinned Spell
+  --#leftsub|Sourcery Ability
+  --#rightsub|Cast Spell At Second Target
+  --#sourceToken|@{selected|token_id}
+
+  --+What Spell Slot Level?|Click a button bellow to select your spell slot level.
+  --+|[rbutton]1::knowYourLVL1;1[/rbutton][rbutton]2::knowYourLVL1;2[/rbutton][rbutton]3::knowYourLVL1;3[/rbutton][rbutton]4::knowYourLVL1;4[/rbutton][rbutton]5::knowYourLVL1;5[/rbutton][rbutton]6::knowYourLVL1;6[/rbutton][rbutton]7::knowYourLVL1;7[/rbutton][rbutton]8::knowYourLVL1;8[/rbutton][rbutton]9::knowYourLVL1;9[/rbutton]
+  --X|
+  --:knowYourLVL1|
+  --#whisper|
+  --=SlotLevel|[&reentryval]
+  --=SlotsTotal|[*S:lvl[$SlotLevel]_slots_total]
+  --=SlotsExpended|[*S:lvl[$SlotLevel]_slots_expended]
+
+  --=HowManyDice|[$SlotLevel]
+
+  -->GetAndCheckSlotInformation|
+
+  --#emoteText|@{selected|token_name} converts [$HowManyDice] sourcery to cast the same spell at a different target.
+  --=ClassRes|@{selected|repeating_resource_$0_resource_left} - [$HowManyDice]
+  --@setattr|_charid @{selected|character_id} _repeating_resource_$0_resource_left|[$ClassRes] _silent
+  -->DeductSpellSlot|
+
+  --:GetAndCheckSlotInformation|
+  --?[*S:repeating_resource_$0_resource_left] -eq 0|Why
+  --?[$HowManyDice] -gt [*S:repeating_resource_$0_resource_left]|NotEnough
+  --<|
+
+  --:DeductSpellSlot|
+  --=SlotsExpended|[$SlotsExpended] + 1
+  --@setattr|_charid [*S:character_id] _lvl[$SlotLevel]_slots_expended|[$SlotsExpended] _silent
+  --X|Full Stop
+
+  --:NoSlotsLeft|
+  --+|[*S:character_name] doesn't need any more [$SlotLevel.Total] spell slots.
+  --X|NoSlotsLeftStop
+
+  --:Why|
+  --+|You are out of Sorcery Points
+  --X|
+
+  --:NotEnough|
+  --+|You don't have enough Sorcery Points to do that.
+  --X|
+
+}}

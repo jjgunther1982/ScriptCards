@@ -1,0 +1,111 @@
+!Scriptcard {{ 
+  --#emoteBackground|#transparent
+  --#titleCardBackground|#ff8000
+  --#titlefontsize|1.75em
+  --#titlefontlineheight|1.75em
+  --#titleFontColor|white
+  --#titlefontface|Shadows Into Light
+  --#subtitleFontSize|12px
+  --#subtitleFontFace|Verdana
+  --#evenRowBackground|#B6AB91
+  --#evenRowFontColor|#000000
+  --#oddRowBackground|#CEC7B6
+  --#oddRowFontColor|#000000
+  --#sourceToken|@{selected|token_id}
+
+  --#title|Zephyr Strike
+  --#titleCardBackground|#FF0000
+  --#sourceToken|@{selected|token_id}
+  -->GetAndCheckSlotInformation|
+
+  --?[*S:EnsStr] -ne 0|TurnOffEnsStrk
+  --:EnsStrk|
+  --?"[*S:marked]" -inc "-"|TurnOffHuntersMark
+  --:HuntMar|
+  --?[*S:MagicWeapLVL] -ne 0|TurnOffMagicWeapon
+  --:MagWeap|
+
+  --#emoteText|@{selected|token_name} gains the speed of gale!!!
+  --+|You move like the wind. Until the spell ends, your movement doesn’t provoke opportunity attacks.Once before the spell ends, you can give yourself advantage on one weapon attack roll on your turn. That attack deals an extra 1d8 force damage on a hit. Whether you hit or miss, your walking speed increases by 30 feet until the end of that turn.
+  --@setattr|_charid [*S:character_id] _Zephyr|1 _silent
+  --@act| -1| 10| _Zephyr Nala
+  --@token-mod| _set tint_color|#FFFF00 _ids @{character_id}
+  -->DeductSpellSlot|
+
+  --:GetAndCheckSlotInformation|
+  --=SlotLevel|1
+  --=SlotsTotal|0
+  --=SlotsExpended|[*S:lvl[$SlotLevel]_slots_expended]
+  --?[$SlotsExpended.Total] -eq [$SlotsTotal.Total]|NoSlotsLeft
+  --<|
+
+  --:DeductSpellSlot|
+  --@token-mod| _ids [*S:t-id] _set statusmarkers|Aura
+  --=SlotsExpended|[$SlotsExpended] - 1
+  --@setattr|_charid [*S:character_id] _lvl[$SlotLevel]_slots_expended|[$SlotsExpended] _silent
+  --+|Level [$SlotLevel] Slots Left: [$SlotsExpended]
+  -->PlayEffects|@{selected|token_id};none;burn-smoke;none;none;Zephyr
+  --X|Full Stop
+
+  --:NoSlotsLeft|
+  --+|[*S:character_name] has no level [$SlotLevel.Total] spell slots available.
+  --#emoteText|[*S:character_name] tries to cast a spell but farts in instead.
+  -->PlayEffects|@{selected|token_id};none;bomb-acid;none;none;Fart
+  --X|NoSlotsLeftStop
+
+  --:PlayEffects|Parameters are : sourcetoken; targettoken; source effect; target effect; line effect; sound effect
+  --vtoken|[%1%] [%3%]
+  --vtoken|[%2%] [%4%]
+  --vbetweentokens|[%1%] [%2%] [%5%]
+  --@roll20AM|_audio,play,nomenu|[%6%]
+  --<|
+
+
+  --:TurnOffHuntersMark|
+  --+Hunter's Mark|@{selected|token_name} loses focus Hunter's Mark.
+  --*|Remove the token icon for [*[*S:character_id]:t-name].
+  --@setattr|_charid [*S:character_id] _marked|0 _silent
+  -->HuntMar|
+
+  --:TurnOffEnsStrk|
+  --+Ensnaring Srike|@{selected|token_name} loses focus ensnaring strike.
+  --@setattr|_charid [*S:character_id] _EnsSti|0 _silent
+  --*|Get rid of the turn tracker for ensnaring strike.
+  --@token-mod| _set tint_color|transparent _ids @{character_id}
+  -->EnsStrk|
+
+  --:TurnOffMagicWeapon|
+  --+Magic Weapon|@{selected|token_name}'s @{selected|MagicWeapon} is no longer magical.
+  --@setattr|_charid [*S:character_id] _MagicWeapLVL|0 _silent
+  --@setattr|_charid [*S:character_id] _MagicWeapon|0 _silent
+  -->MagWeap|
+
+}}
+
+!Scriptcard {{ 
+
+
+  --#emoteBackground|#transparent
+  --#titleCardBackground|#ff8000
+  --#titlefontsize|1.75em
+  --#titlefontlineheight|1.75em
+  --#titleFontColor|white
+  --#titlefontface|Shadows Into Light
+  --#subtitleFontSize|12px
+  --#subtitleFontFace|Verdana
+  --#evenRowBackground|#B6AB91
+  --#evenRowFontColor|#000000
+  --#oddRowBackground|#CEC7B6
+  --#oddRowFontColor|#000000
+  --#sourceToken|@{selected|token_id}
+
+  --#title|Zephyr Strike Off
+  --#titleCardBackground|#00008b
+  --#sourceToken|@{selected|token_id}
+  --#emoteText|@{selected|token_name} slows down.
+  --@setattr|_charid [*S:character_id] _Zephyr|0 _silent
+  --*|Get rid of the turn tracker.
+  --@roll20AM|_audio,play,nomenu|Shrink
+  --@token-mod| _set tint_color|transparent _ids @{character_id}
+  --X|
+}}

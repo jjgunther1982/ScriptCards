@@ -1,0 +1,71 @@
+!scriptcards {{ 
+
+  --:PFEG|
+  --#sourceToken|@{selected|token_id}
+  --#targetToken|@{target|token_id}
+  --#title|Protection from Evil and Good
+  --#leftsub|Buff Spell
+  --#rightsub|Range: Touch Duration: 10 minutes
+  -->GetAndCheckSlotInformation|
+
+  --?"[*S:marked]" -inc "-"|TurnOffHuntersMark
+  --:HuntMar|
+  --?[*S:Zephyr] -ne 0|TurnOffZeph
+  --:Zeph|
+  --?[*S:MagicWeapLVL] -ne 0|TurnOffMagicWeapon
+  --:MagWeap|
+  --?[*S:EnsStr] -ne 0|TurnOffEnsStrk
+  --:EnsStrk|
+
+  --#emoteText|@{selected|token_name} gives @{target|token_name} a hard slap on the ass to protect them from aberrations, celestials, elementals, fey, fiends, and undead.
+  --@act| -1| 100| _PFEG @{target|token_name}
+  --+|The creatures listed above have disadvantage towards @{target|token_name} on attack rolls, can't charm, frighten, or possess @{target|token_name}.  @{target|token_name} has advantage for saving throws against those creatures
+  -->DeductSpellSlot|
+
+  --:GetAndCheckSlotInformation|
+  --=SlotLevel|1
+  --=SlotsTotal|0
+  --=SlotsExpended|[*S:lvl[$SlotLevel]_slots_expended]
+  --?[$SlotsExpended.Total] -eq [$SlotsTotal.Total]|NoSlotsLeft
+  --<|
+
+  --:DeductSpellSlot|
+  --@token-mod| _ids [*S:t-id] _set statusmarkers|Aura
+  --=SlotsExpended|[$SlotsExpended] - 1
+  --@setattr|_charid [*S:character_id] _lvl[$SlotLevel]_slots_expended|[$SlotsExpended] _silent
+  --+|Level [$SlotLevel] Slots Left: [$SlotsExpended] 
+  --X|Full Stop
+
+  --:NoSlotsLeft|
+  --+|[*S:character_name] has no level [$SlotLevel.Total] spell slots available.
+  --#emoteText|[*S:character_name] tries to cast a spell at [*T:character_name] but farts in instead.
+  --X|NoSlotsLeftStop
+
+
+  --:TurnOffHuntersMark|
+  --+Hunter's Mark|@{selected|token_name} loses focus Hunter's Mark.
+  --*|Remove the token icon for [*[*S:character_id]:t-name].
+  --@setattr|_charid [*S:character_id] _marked|0 _silent
+  -->HuntMar|
+
+  --:TurnOffZeph|
+  --+Zephyr Strike|@{selected|token_name} slows down.
+  --*|Get rid of the turn tracker.
+  --@setattr|_charid [*S:character_id] _Zephyr|0 _silent
+  --@roll20AM|_audio,play,nomenu|Shrink
+  --@token-mod| _set tint_color|transparent _ids @{character_id}
+  -->Zeph|
+
+  --:TurnOffMagicWeapon|
+  --+Magic Weapon|@{selected|token_name}'s @{selected|MagicWeapon} is no longer magical.
+  --@setattr|_charid [*S:character_id] _MagicWeapLVL|0 _silent
+  --@setattr|_charid [*S:character_id] _MagicWeapon|0 _silent
+  -->MagWeap|
+
+  --:TurnOffEnsStrk|
+  --+Ensnaring Srike|@{selected|token_name} loses focus ensnaring strike.
+  --@setattr|_charid [*S:character_id] _EnsStr|0 _silent
+  --*|Get rid of the turn tracker for ensnaring strike.
+  --@token-mod| _set tint_color|transparent _ids @{character_id}
+  -->EnsStrk|
+}}

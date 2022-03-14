@@ -1,0 +1,261 @@
+!scriptcard {{ 
+
+--/|                >>>>> Formatting <<<<< 
+
+  --#emoteBackground|#transparent
+  --#titleCardBackground|#2bff00
+  --#titlefontsize|1.75em
+  --#titlefontlineheight|1.75em
+  --#titleFontColor|white
+  --#titlefontface|Shadows Into Light
+  --#subtitleFontSize|12px
+  --#subtitleFontFace|Verdana
+  --#evenRowBackground|#B6AB91
+  --#evenRowFontColor|#000000
+  --#oddRowBackground|#CEC7B6
+  --#oddRowFontColor|#000000
+  --#whisper|self,GM
+
+
+  --#title|Deflect Missiles
+  --#sourceToken|@{selected|token_id}
+  --#leftsub|Defensive Move
+  --#rightsub|Reaction
+
+
+  --=PotDamage|?{Ranged Damage|1}
+  --=ReducedAmount|1d10 + [*S:dexterity_mod] [DEX] + [*S:level] [LVL]
+  --?[$PotDamage] -lt [$ReducedAmount]|DamageBack
+  --#whisper|
+  --+|Missile Damage reduced by [$ReducedAmount].
+  --#emoteText|@{selected|character_name} used their reaction to reduce incoming missile damage.
+  --X|
+
+  --:DamageBack|
+  --=BlessCount|1
+  --+You Caught it.  Do you want to throw it back?|[rbutton]Yes::DaretoThrow;Yes[/rbutton][rbutton]No::DaretoThrow;No[/rbutton]
+  --X|
+  --:DaretoThrow|
+  --&maybe|[&reentryval]
+  --?"[&maybe]" -inc "yes"|ThrowIt
+  --#whisper|
+  --#emoteText|[*S:character_name] caught the missile and took no damage.
+  --X|
+  --:ThrowIt|
+  -->BuildAndAskTargets|[$BlessCount.Raw]
+  -->GetAndCheckSlotInformation|
+  --#emoteText|@{selected|character_name} used a Ki Point to attack.
+  --=DisplayCount|1
+  --:BlessLoop|
+  -->FireMissile|[$DisplayCount.Raw]
+  --=DisplayCount|[$DisplayCount] + 1
+  --?[$DisplayCount] -le [$BlessCount]|BlessLoop
+
+  -->DeductSpellSlot|
+  --#rightsub|Level [$SlotLevel] Left: [$SlotsRemaining] 
+  --X|
+
+  --:FireMissile|
+  --#whisper|self,GM
+  --&ThisTarget|[&target[%1%]]
+  --+Ask the DM what kind of damage it was.|[rbutton]slashing::damagetype;slashing[/rbutton][rbutton]bludgeoning::damagetype;bludgeoning[/rbutton][rbutton]piercing::damagetype;piercing[/rbutton]
+  --X|
+  --:damagetype|
+  --&DamageType|[&reentryval]
+  --+Choose an attack roll type.|[rbutton]Standard::knowYourRoll1;1d20[/rbutton][rbutton]Advantage::knowYourRoll1;2d20kh1[/rbutton][rbutton]Disadvantage::knowYourRoll1;2d20kl1[/rbutton]
+  --X| DONE
+  --:knowYourRoll1|
+  --&AttackRoll|[&reentryval]
+  --+Ask the DM which damage dice it uses.|[rbutton]1d4::DiceType;1d4[/rbutton][rbutton]1d6::DiceType;1d6[/rbutton][rbutton]1d8::DiceType;1d8[/rbutton][rbutton]1d10::DiceType;1d10[/rbutton][rbutton]1d12::DiceType;1d12[/rbutton]
+  --X|
+  --:DiceType|
+  --&DamageAmount|[&reentryval]
+
+  --=AttackRoll| [&AttackRoll] + [*S:dexterity_mod] [DEX] + [*S:pb] [PROF]
+
+
+  -->Port|
+  --:AfterPort|
+  -->CheckBless|
+  -->Bardic|
+  --:AfterBardic|
+
+  --#whisper|
+  -->RollResults|
+  --:DoneTalking|
+
+  --?[$AttackRoll.Base] -eq 20|Crit
+  --?[$AttackRoll.Base] -eq 1|Fumble
+  --=NPCAC|[*[&ThisTarget]:npc_ac]
+  --=AttackRoll|[$AttackRoll] + [$BlessRoll] + [$BardicRoll]
+  --?[$AttackRoll.Total] -lt [$NPCAC]|Miss
+
+  --:Hit|
+  -->RollDamage|
+  -->PlayEffects|none;none;none;none;none;Karate
+  --+Hit!|Your attack hit for [$Damage] [&DamageType] damage!
+  -->ApplyDamageTokenmod|[*[&ThisTarget]:t-id];1;[$Damage]
+  -->DeductSpellSlot|
+  --X|
+
+  --:Miss|
+  --+Miss|Your attack missed!
+  -->DeductSpellSlot|
+  --X|
+
+  --:Fumble|
+  --=Fumblet|[T#Fumble-Table]
+  --+Fumble|The attack went really bad!
+  -->PlayEffects|none;none;none;none;none;Failure
+  --+Bad Stuff| [$Fumblet.tableEntryText]
+  --=FDamage|[&DamageAmount] + [*S:dexterity_mod] [DEX]
+  --=FCrit|[&DamageAmount] + [*S:dexterity_mod] [DEX] + [&DamageAmount] [CRIT]
+  --*Possible Damage| Normal Damage is [$FDamage] and Crit Damage is [$FCrit].
+  -->DeductSpellSlot|
+  --X|
+
+  --:Crit|
+  -->RollDamage|crit
+  --:AfterCrit|
+  -->PlayEffects|none;none;none;none;none;Karate
+  --+Critical Hit|You deal [$Damage] [&DamageType] damage CRITICAL HIT!
+  -->ApplyDamageAlterbars|[*[&ThisTarget]:t-id];1;[$Damage]
+  -->DeductSpellSlot|
+  --X|
+
+  --:RollDamage|
+  --&vuln|
+  --?"[*[&ThisTarget]:npc_vulnerabilities]" -inc "[&DamageType]"|DoubleD
+  --?"[*[&ThisTarget]:npc_resistances]" -inc "[&DamageType]"|HalfD
+  --?"[*[&ThisTarget]:npc_immunities]" -inc "[&DamageType]"|immune
+  --^gettoit|
+  --:HalfD|
+  --&vuln| \ 2 [Resistant]
+  --^gettoit|
+  --:DoubleD|
+  --&vuln| * 2 [Vulnerable]
+  --^gettoit|
+  --:immune|
+  --+|[*[&ThisTarget]:token_name] is immune to [&DamageType] damage.
+  --&vuln| * 0 [Immune]
+  --:gettoit|
+  --?[%1%] -eq crit|CritDamage
+  --=Damage|[&DamageAmount] + [*S:dexterity_mod] [DEX][&vuln]
+  --<|
+  --:CritDamage|
+  --=Damage|[$DamageAmount] + [*S:dexterity_mod] [DEX] + 1d[$DamageAmount] [CRIT][&vuln]
+  -->AfterCrit|
+
+
+  --:GetAndCheckSlotInformation|
+  --=SlotsTotal|0
+  --=SlotsExpended|[*S:class_resource]
+  --?[$SlotsExpended.Total] -eq [$SlotsTotal.Total]|NoSlotsLeft
+  --<|
+
+  --:DeductSpellSlot|
+  --=SlotsExpended|[$SlotsExpended] - 1
+  --@setattr|_charid [*S:character_id] _class_resource|[$SlotsExpended] _silent
+  --+|Ki Left: [$SlotsExpended] 
+  --X|Full Stop
+
+  --:NoSlotsLeft|
+  --+|[*S:character_name] has no Ki available.
+  --#emoteText|[*S:character_name] tries to to use Ki, but they can't find their Kis.
+  --X|NoSlotsLeftStop
+
+  --:PlayEffects|Parameters are : sourcetoken; targettoken; source effect; target effect; line effect; sound effect
+  --@token-mod| _ids [*[%2%]:character_id] _set statusmarkers|purple
+  --vtoken|[%1%] [%3%]
+  --vtoken|[%2%] [%4%]
+  --vbetweentokens|[%1%] [%2%] [%5%]
+  --@roll20AM|_audio,play,nomenu|[%6%]
+  --<|
+
+  --:ApplyDamageTokenmod|Parameters are tokenid;bar#;amount
+  --@token-mod|_ignore-selected _ids [%1%] _set bar[%2%]_value|-[%3%]
+   --<|
+
+  --:ApplyDamageAlterbars|
+  --@alter|_target|[%1%] _bar|[%2%] _amount|-[%3%]
+
+  --<|
+
+  --:BuildAndAskTargets|
+  --&TargetString|
+  --=targetCount|1
+  --:TargetLoop|
+  --&TargetString|+t;target[$targetCount.Raw];Missile [$targetCount.Raw] Target
+  --=targetCount|[$targetCount.Raw] + 1
+  --?[$targetCount.Raw] -le [%1%]|>AddSeparator
+  --?[$targetCount.Raw] -le [%1%]|TargetLoop
+  --iPlease click the button below to select the target.;Select [%1%] Targets|[&TargetString]
+  --/|
+  --<|
+
+  --:AddSeparator|
+  --&TargetString|+||
+  --<|
+
+  --:CheckBless|
+  --=Bless|@{selected|repeating_savemod_$0_global_save_active_flag}
+  --?[$Bless] -ne 0|Blessed
+  --=BlessRoll|0
+  --<|
+  --:Blessed|
+  --=BlessRoll|1d4
+  --<|
+
+  --:Bardic|
+  --=BardicRoll|0
+  --?@{selected|Bard} -eq 1|BardOn
+  -->AfterBardic|
+  --:BardOn|
+  --?[$Bless] -ne 0|BardBlessed
+  --+You rolled a [$AttackRoll.Base] for attack for a total of [$AttackRoll].  Do you want to use Bardic Inspiration?|[rbutton]Yes::BardYes[/rbutton][rbutton]No::AfterBardic[/rbutton]
+  --X|
+  --:BardBlessed|
+  --+You rolled a [$AttackRoll.Base] for attack for a total of [$AttackRoll].  You rolled [$BlessRoll] for blessed. Do you want to use Bardic Inspiration?|[rbutton]Yes::BardYes[/rbutton][rbutton]No::AfterBardic[/rbutton]
+  --X| DONE
+
+  
+  --:Port|
+  --+Are you using Portant?.|[rbutton]No::AfterPort[/rbutton][rbutton]Portant 1::knowYourRoll2;1[/rbutton][rbutton]Portant 2::knowYourRoll2;2[/rbutton]
+  --X| DONE
+  --:knowYourRoll2|
+  --=Port|[&reentryval]
+  --?[$Port] -eq 0|AfterPort
+  --?[$Port] -eq 1|Port1
+  --=AttackRoll| [*-MV-n2aBFpJndH0fCQAM:Port2] + [&DamageMod] + @{selected|pb} [PROF]
+  --=Port2|0
+  --@setattr|_charid @{Amorette Muckbuckle|character_id} _Port2|[$Port2] _silent
+  -->AfterPort|
+  --:Port1|
+  --=AttackRoll| [*-MV-n2aBFpJndH0fCQAM:Port1] + [&DamageMod] + @{selected|pb} [PROF]
+  --=Port1|0
+  --@setattr|_charid @{Amorette Muckbuckle|character_id} _Port1|[$Port1] _silent
+  -->AfterPort|
+
+  --:BardYes|
+  --=BardDie|@{Bob|class2_classlevel} \ 5 * 2 + 6
+  --=BardicRoll| 1d[$BardDie]
+  --@setattr|_charid @{selected|character_id} _Bard|0 _silent
+  -->AfterBardic|
+
+  --:RollResults|
+  --?[$BardicRoll] -ge 1 -and [$BlessRoll] -ge 1|BothBardAndBless
+  --?[$BardicRoll] -ge 1|BardTalk
+  --?[$BlessRoll] -ge 1|BlessTalk
+  --+Attack Roll|You rolled a [$AttackRoll] to hit.
+  -->DoneTalking|
+  --:BardTalk|
+  --+Attack Roll|You rolled a [$AttackRoll] to hit.
+  --+Bardic Inspiration|You rolled [$BardicRoll] for bardic inspiration.
+  -->DoneTalking|
+  --:BlessTalk|
+  --+Attack Roll|You rolled [$AttackRoll] to hit and [$BlessRoll] from blessed.
+  -->DoneTalking|
+  --:BothBardAndBless|
+  --+Attack Roll|You rolled [$AttackRoll] to hit, [$BlessRoll] from blessed, and [$BardicRoll] for bardic inspiration.
+  -->DoneTalking|
+}}

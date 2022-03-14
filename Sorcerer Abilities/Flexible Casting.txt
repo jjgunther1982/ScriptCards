@@ -1,0 +1,1 @@
+/w Graff &{template:default} {{name=Graff}}{{Flexible Casting= [Gain Sorcery Points](!&#13;&#37;{Graff&#124;GaiSor&#125​;)[Gain Spell Slots](!&#13;&#37;{Graff&#124;GaiSS&#125​;)}}

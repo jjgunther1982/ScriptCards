@@ -1,0 +1,28 @@
+!scriptcards{{
++++5ETools+++
+  --#reentrant|Spell @{selected|character_id}
+--/|                >>>>> Formatting <<<<<
+  --#emoteBackground|#transparent
+  --#titleCardBackground|#ed0202
+  --#titlefontsize|1.75em
+  --#titlefontlineheight|1.75em
+  --#titleFontColor|white
+  --#titlefontface|Shadows Into Light
+  --#subtitleFontSize|12px
+  --#subtitleFontFace|Verdana
+  --#evenRowBackground|#B6AB91
+  --#evenRowFontColor|#000000
+  --#oddRowBackground|#CEC7B6
+  --#oddRowFontColor|#000000
+
+  --#Title|Song of Rest
+  --#leftsub|Class Ability
+  --#rightsub|
+  --#sourceToken|@{selected|token_id}
+  --#emoteText|@{selected|character_name} plays a sweet jam that makes you feel better.
+
+  --=HealthRestored|1d6
+  --+Song of Rest|Each character who can hear this tasty jam and gains health from hit dice this short rest can gain an additional [$HealthRestored] HP.
+
+
+}}

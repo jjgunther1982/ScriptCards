@@ -1,0 +1,72 @@
+!scriptcard {{ 
++++5ETools+++
+  --#emoteBackground|#transparent
+  --#titleCardBackground|#ffea00
+  --#titlefontsize|1.75em
+  --#titlefontlineheight|1.75em
+  --#titleFontColor|white
+  --#titlefontface|Shadows Into Light
+  --#subtitleFontSize|12px
+  --#subtitleFontFace|Verdana
+  --#evenRowBackground|#B6AB91
+  --#evenRowFontColor|#000000
+  --#oddRowBackground|#CEC7B6
+  --#oddRowFontColor|#000000
+
+  --#sourceToken|@{selected|token_id}
+
+
+  --#title|Hunger of Hadar
+  --#rightsub|Ranged Spell
+  --#leftsub|150 Feet
+
+
+  -->GetAndCheckSlotInformation|
+
+  --#emoteText|
+  --+|[*S:t-name] creats a dim, greenish light that spreads to a 30 ft radius.
+  --+Spell Token|Use the Sickening Radiance spell token to show the location.
+  --@act| -1| 100| _Sickening Radiance Braeden
+  --@token-mod| _ids [*S:t-id] _set statusmarkers|aura
+  --*|Remove anything else they were concentrating on.
+  -->PlayEffects|[*S:t-id];none;burst-death;none;none;Sickening Radiance
+  -->DeductSpellSlot|
+
+  --:NoSlotsLeft|
+  --+|[*S:character_name] has spell slots available.
+  --#emoteText|[*S:character_name] tries to cast a spell but farts in instead.
+  --X|NoSlotsLeftStop
+
+  --:DeductSpellSlot|
+  --=SlotsLeft|[$SlotsExpended] - 1
+  --@setattr|_charid [*S:character_id] _lvl[$SlotLevel]_slots_expended|[$SlotsLeft] _silent
+  --+|Spell Slots Left: [$SlotsLeft] 
+  --X|Full Stop
+
+  --:PlayEffects|Parameters are : sourcetoken; targettoken; source effect; target effect; line effect; sound effect
+  --@token-mod| _ids [*[%2%]:t-id] _set statusmarkers|
+  --vtoken|[%1%] [%3%]
+  --vtoken|[%2%] [%4%]
+  --vbetweentokens|[%1%] [%2%] [%5%]
+  --@roll20AM|_audio,play,nomenu|[%6%]
+  --<|
+
+  --:GetAndCheckSlotInformation|
+  --?[*S:lvl1_slots_total] -gt 0|>SlotLevel;1
+  --?[*S:lvl2_slots_total] -gt 0|>SlotLevel;2
+  --?[*S:lvl3_slots_total] -gt 0|>SlotLevel;3
+  --?[*S:lvl4_slots_total] -gt 0|>SlotLevel;4
+  --?[*S:lvl5_slots_total] -gt 0|>SlotLevel;5
+  --?[*S:lvl6_slots_total] -gt 0|>SlotLevel;6
+  --?[*S:lvl7_slots_total] -gt 0|>SlotLevel;7
+  --?[*S:lvl8_slots_total] -gt 0|>SlotLevel;8
+  --?[*S:lvl9_slots_total] -gt 0|>SlotLevel;9
+  --<|
+  --:SlotLevel|
+  --=SlotLevel|[%1%]
+  --=SlotsTotal|0
+  --=SlotsExpended|[*S:lvl[$SlotLevel]_slots_expended]
+  --?[$SlotsExpended.Total] -eq [$SlotsTotal.Total]|NoSlotsLeft
+  --<|
+}}
+}}

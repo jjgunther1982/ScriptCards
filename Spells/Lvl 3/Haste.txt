@@ -1,0 +1,46 @@
+!scriptcards {{ 
++++5ETools+++
+  --#sourceToken|@{selected|token_id}
+  --#targetToken|@{target|token_id}
+  --#reentrant|@{selected|character_id} 
+
+--/|                >>>>> Formatting <<<<<
+  --#emoteBackground|#transparent
+  --#titleCardBackground|#b600f2
+  --#titlefontsize|1.75em
+  --#titlefontlineheight|1.75em
+  --#titleFontColor|white
+  --#titlefontface|Shadows Into Light
+  --#subtitleFontSize|12px
+  --#subtitleFontFace|Verdana
+  --#evenRowBackground|#B6AB91
+  --#evenRowFontColor|#000000
+  --#oddRowBackground|#CEC7B6
+  --#oddRowFontColor|#000000
+  --#whisper|self,gm
+
+  --#title|Haste
+  --#rightsub|Ranged Spell
+  --#leftsub|30 Feet
+
+  --~HowFarAway|distance;@{selected|token_id};@{target|token_id}
+  --=HowFar|[$HowFarAway] * 5
+  --?[$HowFar] -gt 30|tooFar
+
+  -->Lib5E_GetAndCheckSlotInformation|3
+  --#whisper|
+  --#emoteText|[*S:character_name] cast haste on [*T:character_name].
+  --+Haste|[*T:character_name] speed is doubled, gains +2 AC, gets advantage on Dex Saving Throws, and gains an additional action.
+  --+The Down Side|The additional action can only be used to attack (only 1 attack), Dash, Disengage, Hide, or Use and Object.  When the spell ends, the target can't move or take actions until after its next turn because it will be super tired.
+
+  -->Lib5E_Global_mod_finder|[*T:character_id];ac;Haste
+  --@setattr|_charid [*T:character_id] _repeating_[&ModType]mod_$[$ModLoop]_global_[&ModType2]_active_flag|1 _silent
+  --@token-mod| _ids [*T:t-id] _set statusmarkers|Haste
+  --@act| -1| 10| _Haste [*T:character_name]
+  --@token-mod| _ids [*S:t-id] _set statusmarkers|aura
+  -->Lib5E_DeductSpellSlot|[*S:character_id];[$SlotLevel]
+  --X|
+  --:tooFar|
+  --+|The target is too far away. 
+  --X|
+}}

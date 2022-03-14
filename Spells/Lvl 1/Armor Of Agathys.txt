@@ -1,0 +1,36 @@
+!scriptcards {{ 
++++5ETools+++
+  --#emoteBackground|#transparent
+  --#titleCardBackground|#ffea00
+  --#titlefontsize|1.75em
+  --#titlefontlineheight|1.75em
+  --#titleFontColor|white
+  --#titlefontface|Shadows Into Light
+  --#subtitleFontSize|12px
+  --#subtitleFontFace|Verdana
+  --#evenRowBackground|#B6AB91
+  --#evenRowFontColor|#000000
+  --#oddRowBackground|#CEC7B6
+  --#oddRowFontColor|#000000
+  --#sourceToken|@{selected|token_id}
+
+  --#title|Armor of Agathys
+  --#sourceToken|@{selected|token_id}
+  --#leftsub|Buff Spell
+  --#rightsub|Range: Self Duration: 60 minutes
+
+  -->Lib5E_Warlock_GetAndCheckSlotInformation|
+
+  --#emoteText|@{selected|token_name} takes a sip of water.
+
+  --=SLVLB|[$SlotLevel] - 1
+  --=SLVLBM|[$SLVLB] * 5
+  --=tempHP| 5 * [$SlotLevel]
+  --+Temporary HP gained|@{selected|token_name} gained [$tempHP] Temporary Hit Points.
+  --@setattr|_charid [*S:character_id] _hp_temp|[$tempHP] _silent
+  -->Lib5e_spell_PlayEffects|@{selected|token_id};none;burst-charm;none;none;falselife
+  -->Lib5E_DeductSpellSlot|[*S:character_id];[$SlotLevel]
+
+
+
+}}

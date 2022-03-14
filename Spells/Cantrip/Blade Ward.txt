@@ -1,0 +1,10 @@
+!scriptcards {{ 
+
+  --:BW|
+  --#title|Blade Ward
+  --#sourceToken| @{selected|token_id}
+  --#emoteText|@{selected|token_name}extends their hand and throughs up gangs signs while saying "WEST SIDE". 
+  --+|Until the end of your next turn, they have resistance against bludgeoning, piercing, and slashing damage dealt by weapon attacks.
+  --@act| -1| 1| _Blade Ward
+  --X|
+}}

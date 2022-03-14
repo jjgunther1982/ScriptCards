@@ -1,0 +1,98 @@
+!scriptcards{{
++++5ETools+++
+  --#reentrant|@{selected|character_id}  ​
+  --#emoteBackground|#transparent
+  --#titleCardBackground|#ffea00
+  --#titlefontsize|1.75em
+  --#titlefontlineheight|1.75em
+  --#titleFontColor|white
+  --#titlefontface|Shadows Into Light
+  --#subtitleFontSize|12px
+  --#subtitleFontFace|Verdana
+  --#evenRowBackground|#B6AB91
+  --#evenRowFontColor|#000000
+  --#oddRowBackground|#CEC7B6
+  --#oddRowFontColor|#000000
+  --#sourceToken|@{selected|token_id}
+  --#targetToken|@{target|token_id}
+  --#whisper|self,GM
+
+  --#Title|Hellish Rebuke
+  --#rightsub|Reaction 60 Feet
+  --#sourceToken|@{selected|token_id}
+  --#targetToken|@{target|token_id}
+
+  --+Use your class ability or a spell slot.|[rbutton]Racial Ability::RacialAbility;[/rbutton][rbutton]Spell Slot::SpellSlot;[/rbutton]
+
+  --X| DONE
+  --:SpellSlot|
+  --#whisper|
+  --&UsedSlot|yes
+  -->Lib5E_Warlock_GetAndCheckSlotInformation|
+  --#leftsub|Level [$SlotLevel] Spell Slot
+  --^AfterChoice|
+  --:RacialAbility|
+  --#whisper|
+  --&UsedSlot|no
+  --#leftsub|Racial Ability
+  -->Lib5E_FindResource|[*S:character_id];Hellish Rebuke [l];ResourceUsed;Ammo
+
+  -->Lib5E_AmmoAvailable|Ammo
+  --=SlotLevel|2
+  --:AfterChoice|
+
+  --#emoteText|@{selected|token_name} cast Hellish Rebuke on @{target|token_name}.
+
+  --+|[img]https://media1.tenor.com/images/0c9e557281645bde5e1d33ad3e445d22/tenor.gif?itemid=18561516[/img]
+
+
+
+  --=DC|@{selected|spell_save_dc}
+  --=SavingThrow|1d20 + @{target|dexterity_save_bonus}
+  -->Lib5e_spell_PlayEffects|[*S:t-id];[*T:t-id];glow-fire;beam-fire;bomb-fire;Fire
+  --+|@{target|token_name} made a [$SavingThrow] Dexterity Saving Throw.  [$DC] was required.
+  --&DamageType|fire
+  -->Lib5E_Vulnerable|
+  --=DamageDie|[$SlotLevel]
+  --=Damage|[$DamageDie.Raw]d10[&vuln]
+  --=HalfDamage|[$Damage] \ 2
+  --+|Damage roll was [$Damage].
+  --?[$SavingThrow] -ge [$DC]|Half
+  --+Full|@{target|token_name} failed their saving throw and took [$Damage] fire damage.
+  -->ApplyDamage|
+  -->Lib5E_PlayEffects|@{selected|token_id};@{target|token_id};missile-fire;explosion-fire;beam-fire;Hellish Rebuke
+  --?"[&UsedSlot]" -eq "yes"|SpellSlotSpent
+  -->Lib5E_AmmoSpent|[*S:character_id];Ammo
+  --X|
+  --:SpellSlotSpent|
+  -->Lib5E_DeductSpellSlot|[*S:character_id];[$SlotLevel]
+  --X|
+
+  --:Half|
+  --+Half|@{target|token_name} passed their saving throw and took [$HalfDamage] fire damage.
+  --=Damage|[$HalfDamage]
+  -->ApplyDamage|
+  -->Lib5E_PlayEffects|@{selected|token_id};@{target|token_id};missile-fire;explosion-fire;beam-fire;Hellish Rebuke
+  --?"[&UsedSlot]" -eq "yes"|SpellSlotSpent
+  -->Lib5E_AmmoSpent|[*S:character_id];Ammo
+  --X|
+  --:SpellSlotSpent|
+  -->Lib5E_DeductSpellSlot|[*S:character_id];[$SlotLevel]
+  --X|
+
+
+  --:ApplyDamage|
+  --=Bar|[*T:t-bar1_value]
+  --?[$Damage] -gt [$Bar]|=Damage;[$Bar]|=Damage;[%3%]
+  --&CharacterName|[*T:character_name]
+  --=CurrentHealth|-[*T:t-bar1_value]
+  --!t:[*T:t-id]|bar1_value:-=[$Damage]
+  --?[*T:t-bar1_value] -le 0|Dead
+  --<|
+  --:Dead|
+  --@token-mod| _ids [%1%] _set bar[%2%]_value|0
+  -->Lib5E_Specter|[*T:id];[$Damage]
+  --<|
+
+
+}}

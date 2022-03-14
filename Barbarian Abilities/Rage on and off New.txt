@@ -1,0 +1,56 @@
+!Scriptcard {{ 
++++5ETools+++
+  --#reentrant|RAGE @{selected|character_id} 
+
+--/|                >>>>> Formatting <<<<<
+  --#emoteBackground|#transparent
+  --#titleCardBackground|#ed0202
+  --#titlefontsize|1.75em
+  --#titlefontlineheight|1.75em
+  --#titleFontColor|white
+  --#titlefontface|Shadows Into Light
+  --#subtitleFontSize|12px
+  --#subtitleFontFace|Verdana
+  --#evenRowBackground|#B6AB91
+  --#evenRowFontColor|#000000
+  --#oddRowBackground|#CEC7B6
+  --#oddRowFontColor|#000000
+  --#whisper|self,gm
+  --#title|RAGE BOB
+  --#titleCardBackground|#FF0000
+  --#sourceToken|@{selected|token_id}
+
+  -->Lib5E_Global_mod_finder|@{selected|character_id};damage;Rage
+  --&ResourceUsed|Rage
+  --?"[*R:global_damage_active_flag]" -eq "1"|TurnOff
+
+  --#whisper|
+  -->Lib5E_FindResource|[*S:character_id];[&ResourceUsed];Ammoname;Ammo
+  -->Lib5E_AmmoAvailable|Ammo
+
+  --#emoteText|@{selected|token_name} goes into a pint sized fit of RAGE!!!
+  --+|[img]https://c.tenor.com/ob62tslCeUIAAAAC/gnome-gravity-falls.gif[/img]
+  --@roll20AM|_audio,play,nomenu|rage
+  --vtoken|@{selected|token_id} burn-death
+  --@setattr|_charid [*S:character_id] _repeating_[&ModType]mod_$[$ModLoop.Raw]_global_[&ModType]_active_flag|1 _silent
+  --@act| -1| 10| _Rage Bob
+  --@token-mod| _set currentside|2 _ids @{character_id}
+  -->Lib5E_AmmoSpent|[*S:character_id];Ammo
+  --X|
+
+
+
+
+
+  --:TurnOff|
+  --#whisper|
+  --#emoteText|@{selected|token_name} Calms down.
+  --+|[img]https://media3.giphy.com/media/nfecRCYP9PjO/giphy.gif[/img]
+  -->Lib5E_Global_mod_finder|@{selected|character_id};damage;Rage
+  --@setattr|_charid [*S:character_id] _repeating_[&ModType]mod_$[$ModLoop.Raw]_global_[&ModType]_active_flag|2 _silent
+  --*|Get rid of the turn tracker.
+  --@roll20AM|_audio,play,nomenu|Shrink
+  --@token-mod| _set currentside|1 _ids @{character_id}
+  --X|
+}}
+

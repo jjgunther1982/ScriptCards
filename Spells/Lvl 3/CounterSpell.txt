@@ -1,0 +1,69 @@
+!scriptcards {{ 
+  --#reentrant|@{selected|character_id} 
++++5ETools+++
+--/|                >>>>> Formatting <<<<<
+  --#emoteBackground|#transparent
+  --#titleCardBackground|#b600f2
+  --#titlefontsize|1.75em
+  --#titlefontlineheight|1.75em
+  --#titleFontColor|white
+  --#titlefontface|Shadows Into Light
+  --#subtitleFontSize|12px
+  --#subtitleFontFace|Verdana
+  --#evenRowBackground|#B6AB91
+  --#evenRowFontColor|#000000
+  --#oddRowBackground|#CEC7B6
+  --#oddRowFontColor|#000000
+  --#whisper|self,GM
+
+  --#title|Counterspell
+  --#leftsub|Ranged Spell Debuff
+  --#rightsub|60 ft Range
+  --#sourceToken|@{selected|token_id}
+  --#targetToken|@{target|token_id}
+
+  -->Lib5E_GetAndCheckSlotInformation|3
+
+  --~HowFarAway|distance;@{selected|token_id};@{target|token_id}
+  --=HowFar|[$HowFarAway] * 5
+  --?[$HowFar] -gt 120|tooFar
+  -->SpellLevel|
+  --#emoteText|[*S:character_name] attempts to counter @{target|token_name}'s spell.
+  --?[$SlotLevel] -ge [$CastLvl]|Success
+  --+Ability Check|Ask the DM if the ability check is standard, advantage, or disadvantage for @{target|token_name}.
+  --+|[rbutton]Standard::knowYourRoll1;1d20[/rbutton][rbutton]Advantage::knowYourRoll1;2d20kh1[/rbutton][rbutton]Disadvantage::knowYourRoll1;2d20kl1[/rbutton]
+  --X|
+  --:knowYourRoll1|
+  --#whisper|
+  --=Attackroll|[&reentryval] + [*S:charisma_mod] [CHA]
+  -->Lib5E_Bardic|
+  --=DC|10 + [$CastLvl] [Spell Level]
+  --+|Spell Casting Ability Check [$Attackroll] vs [$DC]
+  --=Attackroll|[$Attackroll] + [$BardicRoll]
+  --?[$BardicRoll] -eq 0|NoBardicRollResult
+  --+Bardic Inspiration|You roll [$BardicRoll] from Bardic Inspiration.
+  --:NoBardicRollResult|
+  --?[$Attackroll] -lt [$DC]|Failed
+  --:Success|
+  --+Success|@{target|token_name} was unable to cast their spell.
+  -->Lib5E_DeductSpellSlot|[*S:character_id];[$SlotLevel]
+  --X|
+  --:Failed|
+  --#whisper|
+  --+Failed|@{target|token_name} is able to cast their spell.
+  -->Lib5E_DeductSpellSlot|[*S:character_id];[$SlotLevel]
+  --X|
+
+  --:tooFar|
+  --#whisper|
+  --+|The target is too far away. 
+  -->DeductSpellSlot|
+
+  --:SpellLevel|
+  --+What Level was the spell you are trying to counter?|Ask the GM what level the spell was that you are trying to counter
+  --+|[rbutton]1::CastedSpellLevel;1[/rbutton][rbutton]2::CastedSpellLevel;2[/rbutton][rbutton]3::CastedSpellLevel;3[/rbutton][rbutton]4::CastedSpellLevel;4[/rbutton][rbutton]5::CastedSpellLevel;5[/rbutton][rbutton]6::CastedSpellLevel;6[/rbutton][rbutton]7::CastedSpellLevel;7[/rbutton][rbutton]8::CastedSpellLevel;8[/rbutton][rbutton]9::CastedSpellLevel;9[/rbutton]
+  --X|
+  --:CastedSpellLevel|
+  --=CastLvl|[&reentryval]
+  --<|
+}}

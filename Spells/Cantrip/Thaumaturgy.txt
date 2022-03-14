@@ -1,0 +1,7 @@
+!scriptcards {{ 
+
+  --#title|Thaumaturgy
+  --#sourceToken|@{selected|token_id}
+  --#emoteText| ?{You can do one of the following:|Booming Voice,@{selected|token_name}’s voice booms up to three times as loud as normal for 1 minute.|Flame manipulator,@{selected|token_name} causes flames to flicker/brighten/dim/or change color for 1 minute.|Instantaneous sound,@{selected|token_name} creates an instantaneous⁠ sound that originates from a point of your choice within range, such as a rumble of thunder, the cry of a raven, or ominous whispers.|Open door or window,@{selected|token_name} instantaneously causes an unlocked door or window to fly open or slam shut.|Alter your eyes,@{selected|token_name} alters the appearance of their eyes for 1 minute.}
+  --X|
+}}

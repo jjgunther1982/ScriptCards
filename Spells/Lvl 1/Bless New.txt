@@ -1,0 +1,90 @@
+!scriptcard {{  
++++5ETools+++
+  --#reentrant|@{selected|character_id} 
+--/|                >>>>> Formatting <<<<<
+  --#emoteBackground|#transparent
+  --#titleCardBackground|#b600f2
+  --#titlefontsize|1.75em
+  --#titlefontlineheight|1.75em
+  --#titleFontColor|white
+  --#titlefontface|Shadows Into Light
+  --#subtitleFontSize|12px
+  --#subtitleFontFace|Verdana
+  --#evenRowBackground|#B6AB91
+  --#evenRowFontColor|#000000
+  --#oddRowBackground|#CEC7B6
+  --#oddRowFontColor|#000000
+  --#whisper|self,GM
+
+  --#title|Bless
+  --#sourceToken|@{selected|token_id}
+
+  -->Lib5E_GetAndCheckSlotInformation|1
+  --#whisper|self,GM
+  --=BlessCount|[$SlotLevel] + 2  
+  --?[$SlotLevel] -eq 1|AskHowMany
+  --:AfterHowMany|
+  --=DisplayCount|1
+  --#leftsub|Slot level [$SlotLevel]
+  --#rightsub|Ranged Buff
+  --#emoteText|@{selected|character_name} uses a level [$SlotLevel.Raw] spell slot to Bless [$BlessCount.Raw] friends!
+  --+|Blessed targets will be able to add 1d4 to their attack rolls or saving throws for the duration of the spell.
+  --:MissileLoop|
+  --?[$DisplayCount] -gt 1|NextTarget
+  --+Target|[rbutton]Click this button to select your first target.::DoIt;&#64;{target|token_id}[/rbutton] 
+  --X|
+  --:NextTarget|
+  --+Target|[rbutton]Click this button to select your next target.::DoIt;&#64;{target|token_id}[/rbutton] 
+  --X|
+  --:DoIt|
+  -->FireMissile|[$DisplayCount.Raw]
+  --:AfterMissile|
+  --=DisplayCount|[$DisplayCount] + 1
+  --?[$DisplayCount] -le [$BlessCount]|MissileLoop
+  -->Lib5E_DeductSpellSlot|[*S:character_id];[$SlotLevel]
+  --@token-mod| _ids [*S:t-id] _set statusmarkers|aura
+  --#rightsub|Level [$SlotLevel] Left: [$SlotsRemaining] 
+  --X|
+
+  --:FireMissile|
+  --&ThisTarget|[&reentryval]
+  --#targettoken|[&reentryval]
+  --+|[*[&ThisTarget]:character_name] is Blessed.
+  --@act| -1| 10| _Bless [*[&ThisTarget]:character_name]
+  -->Lib5E_PlayEffects||@{selected|token_id};[&ThisTarget];none;none;none;bless
+  -->Lib5E_Global_mod_finder|[*[&ThisTarget]:character_id];save;Bless
+  --@setattr|_charid [*[&ThisTarget]:character_id] _repeating_[&ModType]mod_$[$ModLoop]_global_[&ModType2]_active_flag|1 _silent
+  -->Lib5E_Global_mod_finder|[*[&ThisTarget]:character_id];tohit;Bless
+  --@setattr|_charid [*[&ThisTarget]:character_id] _repeating_[&ModType]mod_$[$ModLoop]_global_[&ModType2]_active_flag|1 _silent
+  --@token-mod| _ids [*[&ThisTarget]:t-id] _set statusmarkers|Bless
+  -->AfterMissile|
+
+
+  --:BuildAndAskTargets|
+  --&TargetString|
+  --=targetCount|1
+  --:TargetLoop|
+  --&TargetString|+t;target[$targetCount.Raw];Missile [$targetCount.Raw] Target
+  --=targetCount|[$targetCount.Raw] + 1
+  --?[$targetCount.Raw] -le [%1%]|>AddSeparator
+  --?[$targetCount.Raw] -le [%1%]|TargetLoop
+  --iPlease click the button below to select targets to bless.;Select [%1%] Targets|[&TargetString]
+  --/|
+  --<|
+
+  --:AddSeparator|
+  --&TargetString|+||
+  --<|
+
+
+  --:AskHowMany|
+  --#whisper|self,GM
+  --+How Many Targets do you want to cast this spell on?|[rbutton]3::ThisMany;3[/rbutton][rbutton]2::ThisMany;2[/rbutton][rbutton]1::ThisMany;1[/rbutton]
+  --X|
+  --:ThisMany|
+  --#whisper|
+  --=BlessCount|[&reentryval]
+  --^AfterHowMany|
+
+
+}}

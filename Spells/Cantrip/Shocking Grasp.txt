@@ -1,0 +1,204 @@
+!scriptcards{{
+  --#reentrant|@{selected|character_id}  ​
+  --#sourceToken|@{selected|token_id}
+  --#targetToken|@{target|token_id}
+  --#reentrant|Spell
+--/|                >>>>> Formatting <<<<<
+  --#emoteBackground|#transparent
+  --#titleCardBackground|#b600f2
+  --#titlefontsize|1.75em
+  --#titlefontlineheight|1.75em
+  --#titleFontColor|white
+  --#titlefontface|Shadows Into Light
+  --#subtitleFontSize|12px
+  --#subtitleFontFace|Verdana
+  --#evenRowBackground|#B6AB91
+  --#evenRowFontColor|#000000
+  --#oddRowBackground|#CEC7B6
+  --#oddRowFontColor|#000000
+  --#whisper|self,gm
+
+  --#title|Shocking Grasp
+  --#rightsub|Melee Spell
+  --#leftsub|5 Feet
+
+
+  --+Choose an attack roll type.  You have advantage if the target is wearing metal armor.|[rbutton]Standard::knowYourRoll1;1d20[/rbutton][rbutton]Advantage::knowYourRoll1;2d20kh1[/rbutton][rbutton]Disadvantage::knowYourRoll1;2d20kl1[/rbutton]
+
+  --X| DONE
+
+  --:knowYourRoll1|
+
+  --=AttackRoll|[&reentryval] + @{spell_attack_bonus} [Spell Attack Bonus]
+
+  -->CheckBless|
+  -->Bardic|
+  --:AfterBardic|
+  
+  --~HowFarAway|distance;@{selected|token_id};@{target|token_id}
+  --=HowFar|[$HowFarAway] * 5
+  --?[$HowFar] -gt 5|tooFar
+
+  --#emoteText|@{selected|token_name} rubs there feet on the ground and attempts to shock @{target|token_name}.
+  --+|[img]https://c.tenor.com/8vJN2T3P5X8AAAAC/shocking-grasp-dnd.gif[/img]
+
+  --#whisper|
+  -->RollResults|
+  --:DoneTalking|
+
+
+
+  --?[$AttackRollbase] -eq 20|Crit
+  --?[$AttackRollbase] -eq 1|Fumble
+  --=AttackRoll|[$AttackRoll] + [$BlessRoll] + [$BardicRoll]
+  --:TryAgain|
+  --?[$AttackRoll.Total] -ge @{target|npc_ac}|Hit
+
+  --:Miss|
+  --+Miss|Your attack missed!
+  -->GodsBlessing|
+  --:AfterGod|
+  --X|
+
+  --:Hit|
+  -->RollDamageFB|
+  -->PlayEffect|
+  --+Hit!|Your attack hit for [$Damage] lightning damage!
+  --@alter|_target|@{target|token_id} _bar|1 _amount|-[$Damage]
+  --+|The target can't take a reaction until their next turn!!!
+  --X|
+
+  --:Fumble|
+  --=Fumblet|[T#Fumble-Table]
+  --+Fumble|The attack went really bad!
+  --+Bad Stuff| [$Fumblet.tableEntryText]
+  --=FDamage| 4d6
+  --=FCrit|4d6 + 4d6 [CRIT]
+  --*Possible Damage| Normal Damage is [$FDamage] and Crit Damage is [$FCrit].
+  --X|
+
+  --:Crit|
+  -->RollDamageFB|crit
+  --:AfterCrit|
+  -->PlayEffect|
+  --+Critical Hit|You deal [$Damage] lightning damage CRITICAL HIT!
+  --@alter|_target|@{target|token_id} _bar|1 _amount|-[$Damage]
+  --+|The target can't take a reaction until their next turn!!!
+  --X|
+
+  --:RollDamageFB|
+  --&vuln|
+  --=HowManyDice|@{selected|level} \ 5 + 1
+  --?"@{target|npc_immunities}" -inc "lightning"|immune
+  --?"@{target|npc_vulnerabilities}" -inc "lightning"|DoubleD
+  --?"@{target|npc_resistances}" -inc "lightning"|HalfD
+  --^gettoit|
+  --:HalfD|
+  --&vuln| \ 2 [Resistant]
+  --^gettoit|
+  --:DoubleD
+  --&vuln| * 2 [Vulnerable]
+  --:gettoit|
+  --?[%1%] -eq crit|CritDamageFB
+  --=Damage| [$HowManyDice]d8[&vuln]
+  --<|
+  --:CritDamageFB|
+  --=Damage| [$HowManyDice]d8 + [$HowManyDice]d8 [CRIT][&vuln]
+  -->AfterCrit|
+
+  --:immune|
+  --+|@{target|token_name} is immune to lightning damage.  The Spell has no effect.
+  --X|
+
+  --:CheckBless|
+  --=Bless|@{selected|repeating_savemod_$0_global_save_active_flag}
+  --?[$Bless] -ne 0|Blessed
+  --=BlessRoll|0
+  --<|
+  --:Blessed|
+  --=BlessRoll|1d4
+  --<|
+
+  --:Port|
+  --+Are you using Portant?.|[rbutton]No::AfterPort[/rbutton][rbutton]Portant 1::knowYourRoll2;1[/rbutton][rbutton]Portant 2::knowYourRoll2;2[/rbutton]
+  --X| DONE
+  --:knowYourRoll2|
+  --=Port|[&reentryval]
+  --?[$Port] -eq 1|Port1
+  --=AttackRoll| [*-MV-n2aBFpJndH0fCQAM:Port2] + [&DamageMod] + @{selected|pb} [PROF]
+  --=PortantRoll|[*-MV-n2aBFpJndH0fCQAM:Port2]
+  --=Port2|0
+  --@setattr|_charid @{Amorette Muckbuckle|character_id} _Port2|[$Port2] _silent
+  --?[$PortantRoll] -eq 20|Crit
+  -->AfterPort|
+  --:Port1|
+  --=AttackRoll| [*-MV-n2aBFpJndH0fCQAM:Port1] + [&DamageMod] + @{selected|pb} [PROF]
+  --=Port1|0
+  --=PortantRoll|[*-MV-n2aBFpJndH0fCQAM:Port1]
+  --@setattr|_charid @{Amorette Muckbuckle|character_id} _Port1|[$Port1] _silent
+  --?[$PortantRoll] -eq 20|Crit
+  -->AfterPort|
+
+
+  --:Bardic|
+  --=BardicRoll|0
+  --?@{selected|Bard} -eq 1|BardOn
+  -->AfterBardic|
+  --:BardOn|
+  --?[$Bless] -ne 0|BardBlessed
+  --+You rolled a [$AttackRoll.Base] for attack for a total of [$AttackRoll].  Do you want to use Bardic Inspiration?|[rbutton]Yes::BardYes[/rbutton][rbutton]No::AfterBardic[/rbutton]
+  --X| DONE
+  --:BardBlessed|
+  --+You rolled a [$AttackRoll.Base] for attack for a total of [$AttackRoll].  You rolled [$BlessRoll] for blessed. Do you want to use Bardic Inspiration?|[rbutton]Yes::BardYes[/rbutton][rbutton]No::AfterBardic[/rbutton]
+  --X| DONE
+  --:BardYes|
+  --=BardLess20|[*S:BobBardLevel] \ 5 * 2 + 6
+  --?[*S:BobBardLevel] -lt 20|>BardicRoll;[$BardLess20]
+  --?[*S:BobBardLevel] -eq 20|>BardicRoll;12
+  -->AfterBardic|
+  --:BardicRoll|
+  --+|Here
+  --=BardDie|[%1%]
+  --=BardicRoll|1d[$BardDie]
+  --+|Roll [$BardicRoll]
+  --@setattr|_charid @{selected|character_id} _Bard|0 _silent
+  --<|
+
+  --:PlayEffect|
+  --@roll20AM|_audio,play,nomenu|Shocking Grasp
+  --vtoken|@{selected|token_id} none
+  --vtoken|@{target|token_id} burn-holy
+  --vbetweentokens|@{selected|token_id} @{target|token_id} none
+  --<|
+
+
+  --:RollResults|
+  --&BardicRollResult|
+  --&BlessRollResult|
+  --?[$BardicRoll] -eq 0|NoBardResult
+  --&BardicRollResult|You rolled [$BardicRoll] from bardic inspiration.
+  --:NoBardResult|
+  --?[$BlessRoll] -eq 0|NoBlessTalk
+  --&BlessRollResult|You rolled [$BlessRoll] from being blessed.
+  --:NoBlessTalk|
+  --+Attack Roll|You rolled a [$AttackRoll] to hit.[&BardicRollResult][&BlessRollResult]
+  --<|
+
+  --:tooFar|
+  --+|The target is too far away. 
+  --X|
+
+  --:GodsBlessing|
+  --?[*S:class_resource] -eq 0|AfterGod
+  --?[$Loop] -eq 1|AfterGod
+  --=Loop|1
+  --+Do you want to use Favor by the Gods?|[rbutton]Yes::FavorYes[/rbutton][rbutton]No::AfterGod[/rbutton]
+  --X|
+  --:FavorYes|
+  --=FavoredRoll|2d4
+  --+Help From the Gods|You Rolled [$FavoredRoll]
+  --=AttackRoll|[$AttackRoll] + [$FavoredRoll]
+  --+Total|Your total is now [$AttackRoll].
+  --@setattr|_charid [*S:character_id] _class_resource|0 _silent
+  -->TryAgain|
+}}

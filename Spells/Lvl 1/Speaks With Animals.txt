@@ -1,0 +1,15 @@
+!scriptcards {{ 
+
+  --:CP|
+  --#title|Speak with Animals
+  --#leftsub|Ritual (10 minute cast time)
+  --#rightsub|Self
+  --#sourceToken|@{selected|token_id}
+  --#titleCardBackground|#006400
+
+
+  --#emoteText|[*S:character_name] learns how to speak with animals.
+  --X|
+
+
+}}

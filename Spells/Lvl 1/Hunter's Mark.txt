@@ -1,0 +1,110 @@
+!scriptcards{{
+  --#reentrant|@{selected|character_id}
+  --#emoteBackground|#transparent
+  --#titleCardBackground|#ff8000
+  --#titlefontsize|1.75em
+  --#titlefontlineheight|1.75em
+  --#titleFontColor|white
+  --#titlefontface|Shadows Into Light
+  --#subtitleFontSize|12px
+  --#subtitleFontFace|Verdana
+  --#evenRowBackground|#B6AB91
+  --#evenRowFontColor|#000000
+  --#oddRowBackground|#CEC7B6
+  --#oddRowFontColor|#000000
+  --#whisper|self,gm
+
+  --:Hunter's Mark|
+  --#title|Hunter's Mark
+  --#rightsub|Ranged Spell
+  --#leftsub|90 Feet
+  --#sourceToken|@{selected|token_id}
+  --#targetToken|@{target|token_id}
+
+
+  -->GetAndCheckSlotInformation|
+
+  --?[*S:Zephyr] -ne 0|TurnOffZeph
+  --:Zeph|
+  --?[*S:MagicWeapLVL] -ne 0|TurnOffMagicWeapon
+  --:MagWeap|
+  --?[*S:EnsStr] -ne 0|TurnOffEnsStrk
+  --:EnsStrk|
+
+  --#whisper|
+  --#emoteText| @{selected|token_name} extends their hand at @{target|token_name}.  A bullseye appears on @{target|token_name}'s forehead that only @{selected|token_name} can see.
+  --+|[img]https://media1.tenor.com/images/eccdbc7818520d507610eef890f9e2db/tenor.gif?itemid=17546635[/img]
+  --@token-mod| _ids [*T:t-id] _set statusmarkers|yellow
+  --&Marked|[*T:t-id]
+  --@setattr|_charid [*S:character_id] _marked|[&Marked] _silent
+
+  --?[$SlotLevel] -eq 0|AllDone
+
+  -->DeductSpellSlot|
+
+  --:AllDone|
+  --X|
+
+  --:GetAndCheckSlotInformation|
+  --+Is this a new cast or changing target?|[rbutton]New Cast::UseSpellSlot[/rbutton][rbutton]Change Target::ChangeTarget;0[/rbutton]
+  --X|
+  --:UseSpellSlot|
+  --@token-mod| _ids [*S:t-id] _set statusmarkers|aura
+  --+What Spell Slot Level?|Click a button bellow to select your spell slot level.
+  --+|[rbutton]1::knowYourLVL1;1[/rbutton][rbutton]2::knowYourLVL1;2[/rbutton][rbutton]3::knowYourLVL1;3[/rbutton][rbutton]4::knowYourLVL1;4[/rbutton][rbutton]5::knowYourLVL1;5[/rbutton][rbutton]6::knowYourLVL1;6[/rbutton][rbutton]7::knowYourLVL1;7[/rbutton][rbutton]8::knowYourLVL1;8[/rbutton][rbutton]9::knowYourLVL1;9[/rbutton]
+  --X|
+  --:knowYourLVL1|
+  --=SlotLevel|[&reentryval]
+  --=SlotsTotal|0
+  --=SlotsExpended|[*S:lvl[$SlotLevel]_slots_expended]
+  --?[$SlotsExpended.Raw] -eq [$SlotsTotal.Raw]|NoSlotsLeft
+  --<|
+  --:ChangeTarget|
+  --=SlotLevel|[&reentryval]
+  --<|
+
+  --:DeductSpellSlot|
+  --?[$SlotLevel] -eq 0|NoSlot
+  --=SlotsLeft|[$SlotsExpended] - 1
+  --@setattr|_charid [*S:character_id] _lvl[$SlotLevel]_slots_expended|[$SlotsLeft] _silent
+  --+|Level [$SlotLevel] Slots Left: [$SlotsLeft] 
+  --X|Full Stop
+  --:NoSlot|
+  --X|
+
+  --:NoSlotsLeft|
+  --+|[*S:character_name] has no level [$SlotLevel.Total] spell slots available.
+  --#emoteText|[*S:character_name] tries to cast a spell but farts in instead.
+  -->PlayEffects|@{selected|token_id};none;bomb-acid;none;none;Fart
+  --X|NoSlotsLeftStop
+
+  --:PlayEffects|Parameters are : sourcetoken; targettoken; source effect; target effect; line effect; sound effect
+  --vtoken|[%1%] [%3%]
+  --vtoken|[%2%] [%4%]
+  --vbetweentokens|[%1%] [%2%] [%5%]
+  --@roll20AM|_audio,play,nomenu|[%6%]
+  --<|
+
+  --:TurnOffEnsStrk|
+  --+Ensnaring Srike|@{selected|token_name} loses focus ensnaring strike.
+  --@setattr|_charid [*S:character_id] _EnsStr|0 _silent
+  --*|Get rid of the turn tracker for ensnaring strike.
+  --@token-mod| _set tint_color|transparent _ids @{character_id}
+  -->EnsStrk|
+
+  --:TurnOffZeph|
+  --+Zephyr Strike|@{selected|token_name} slows down.
+  --*|Get rid of the turn tracker for Zephyr Stike.
+  --@setattr|_charid [*S:character_id] _Zephyr|0 _silent
+  --@roll20AM|_audio,play,nomenu|Shrink
+  --@token-mod| _set tint_color|transparent _ids @{character_id}
+  -->Zeph|
+
+
+  --:TurnOffMagicWeapon|
+  --+Magic Weapon|@{selected|token_name}'s @{selected|MagicWeapon} is no longer magical.
+  --@setattr|_charid [*S:character_id] _MagicWeapLVL|0 _silent
+  --@setattr|_charid [*S:character_id] _MagicWeapon|0 _silent
+  -->MagWeap|
+
+}}

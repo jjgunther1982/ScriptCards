@@ -1,0 +1,32 @@
+!Scriptcard {{ 
++++5ETools+++
+  --#sourceToken|@{selected|token_id}
+  --#emoteBackground|#transparent
+  --#titleCardBackground|#ffea00
+  --#titlefontsize|1.75em
+  --#titlefontlineheight|1.75em
+  --#titleFontColor|white
+  --#titlefontface|Shadows Into Light
+  --#subtitleFontSize|12px
+  --#subtitleFontFace|Verdana
+  --#evenRowBackground|#B6AB91
+  --#evenRowFontColor|#000000
+  --#oddRowBackground|#CEC7B6
+  --#oddRowFontColor|#000000
+  --#sourceToken|@{selected|token_id}
+  --#whisper|
+  --#title|Ghostly Gaze
+  --#leftSub|Range: 30 ft
+  --#rightSub|Duration: 1 minutes
+  --&ResourceUsed|Ghostly Gaze[s]
+
+  --/This section will check if there is a resource needed for an attack.  Since a handaxe can be thrown, the PC may not have it in order to attack.  First it will see if there is Ammo needed, then it will find where it is, and then it will check if the PC still has some.
+  -->Lib5E_FindResource|[*S:character_id];[&ResourceUsed];Ammoname;Ammo
+  -->Lib5E_AmmoAvailable|Ammo;[&ResourceUsed]
+
+  --+Ghostly Gaze|[*S:t-name] can see through solid objects, has darkvision, and percieves objects as ghostly, transparent images.
+  --+|[*S:t-name] must finish a short or long rest to use this ability again.
+
+  -->Lib5E_AmmoSpent|[*S:character_id];Ammo;[&ResourceUsed]
+
+}}

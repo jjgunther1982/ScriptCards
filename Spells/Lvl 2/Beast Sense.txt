@@ -1,0 +1,26 @@
+!scriptcards {{ 
+--/|                >>>>> Formatting <<<<<
+  --#emoteBackground|#transparent
+  --#titleCardBackground|#ed0202
+  --#titlefontsize|1.75em
+  --#titlefontlineheight|1.75em
+  --#titleFontColor|white
+  --#titlefontface|Shadows Into Light
+  --#subtitleFontSize|12px
+  --#subtitleFontFace|Verdana
+  --#evenRowBackground|#B6AB91
+  --#evenRowFontColor|#000000
+  --#oddRowBackground|#CEC7B6
+  --#oddRowFontColor|#000000
+  --#title|Speak with Animals
+  --#leftsub|Ritual (10 minute cast time)
+  --#rightsub|Touch | Last 1 hour
+  --#sourceToken|@{selected|token_id}
+  --#titleCardBackground|#006400
+
+
+  --#emoteText|[*S:character_name] can see through a willing beast eyes and feel their senses.
+  --X|
+
+
+}}

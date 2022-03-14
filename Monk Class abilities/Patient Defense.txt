@@ -1,0 +1,53 @@
+!scriptcards {{ 
+
+--/|                >>>>> Formatting <<<<< 
+
+  --#emoteBackground|#transparent
+  --#titleCardBackground|#2bff00
+  --#titlefontsize|1.75em
+  --#titlefontlineheight|1.75em
+  --#titleFontColor|white
+  --#titlefontface|Shadows Into Light
+  --#subtitleFontSize|12px
+  --#subtitleFontFace|Verdana
+  --#evenRowBackground|#B6AB91
+  --#evenRowFontColor|#000000
+  --#oddRowBackground|#CEC7B6
+  --#oddRowFontColor|#000000
+
+  --:Patient Defense|
+  --#title|Patient Defense
+  --#sourceToken|@{selected|token_id}
+  --#titleCardBackground|#006400
+
+
+  -->GetAndCheckSlotInformation|
+
+  --#emoteText|[*S:character_name] says "I know kung fu".
+
+  --:Hit|
+  --+|The [*S:character_name] is dodging.  All attacks against this character are at disadvantage.
+
+  -->DeductSpellSlot|
+
+  --:GetAndCheckSlotInformation|
+  --=SlotsTotal|0
+  --=SlotsExpended|[*S:class_resource]
+  --?[$SlotsExpended.Total] -eq [$SlotsTotal.Total]|NoSlotsLeft
+  --<|
+
+  --:DeductSpellSlot|
+  --=SlotsExpended|[$SlotsExpended] - 1
+  --@setattr|_charid [*S:character_id] _class_resource|[$SlotsExpended] _silent
+  --+|Ki Left: [$SlotsExpended] 
+  --X|Full Stop
+
+  --:NoSlotsLeft|
+  --+|[*S:character_name] has no Ki available.
+  --#emoteText|[*S:character_name] tries to to use Ki, but they can't find them.
+  --X|NoSlotsLeftStop
+
+  --:TheEnd|
+  --X|
+
+}}

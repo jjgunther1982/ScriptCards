@@ -1,0 +1,36 @@
+!scriptcards {{ 
+
+--/|                >>>>> Formatting <<<<<
+  --#emoteBackground|#transparent
+  --#titleCardBackground|#b600f2
+  --#titlefontsize|1.75em
+  --#titlefontlineheight|1.75em
+  --#titleFontColor|white
+  --#titlefontface|Shadows Into Light
+  --#subtitleFontSize|12px
+  --#subtitleFontFace|Verdana
+  --#evenRowBackground|#B6AB91
+  --#evenRowFontColor|#000000
+  --#oddRowBackground|#CEC7B6
+  --#oddRowFontColor|#000000
+
+  --#title|Spare the Dying
+  --#sourceToken| @{selected|token_id}
+  --#targetToken|@{target|token_id}
+  --#leftsub|Instantaneous
+  --#rightsub|Range Touch
+  --+|[img]https://media1.tenor.com/images/01366fb97efdec5928c53a5965d3e6b6/tenor.gif?itemid=19362646[/img]
+  --?"[*T:npc_type]" -eq "undead"|undead
+  --?"[*T:npc_type]" -eq "construct"|construct
+  --#emoteText|@{selected|token_name} touchs @{target|token_name} naughty bits, giving @{target|token_name} a reason to live. 
+  --+Stable|[*T:t-name] is in stable condition with 0 HP and does not need to make anymore death saving throws.
+
+  --^end|
+  --:undead|
+  --#emoteText|@{selected|token_name} touchs @{target|token_name} naughty bits, but they seem to have rotted away.
+  --^end|
+  --:construct|
+  --#emoteText|@{selected|token_name} touchs @{target|token_name} naughty bits, but @{target|token_name} wasn't built with them.
+  --X|
+
+}}

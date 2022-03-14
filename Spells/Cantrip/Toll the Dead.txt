@@ -1,0 +1,76 @@
+!scriptcards{{
+
+--/|                >>>>> Formatting <<<<<
+  --#emoteBackground|#transparent
+  --#titleCardBackground|#b600f2
+  --#titlefontsize|1.75em
+  --#titlefontlineheight|1.75em
+  --#titleFontColor|white
+  --#titlefontface|Shadows Into Light
+  --#subtitleFontSize|12px
+  --#subtitleFontFace|Verdana
+  --#evenRowBackground|#B6AB91
+  --#evenRowFontColor|#000000
+  --#oddRowBackground|#CEC7B6
+  --#oddRowFontColor|#000000
+  --#whisper|self,gm
+  --#reentrant|@{selected|character_id}
+  --:PS|
+  --#title|Toll the Dead
+  --#rightsub|Ranged Spell  DC = @{selected|spell_save_dc}
+  --#leftsub|60 Feet
+  --#sourceToken|@{selected|token_id}
+  --#targetToken|@{target|token_id}
+  --#emoteText| @{selected|token_name} extends their hand at @{target|token_name}.  @{target|token_name} hears the bell toll for them.
+  --=DC|@{selected|spell_save_dc}
+  --+Ask the DM what kind of faving throw is it making?|[rbutton]Standard::knowYourRoll1;1d20[/rbutton][rbutton]Advantage::knowYourRoll1;2d20kh1[/rbutton][rbutton]Disadvantage::knowYourRoll1;2d20kl1[/rbutton]
+
+  --X| DONE
+
+  --:knowYourRoll1|
+  --#whisper|
+  --=SavingThrow|[&reentryval] + @{target|wisdom_save_bonus}
+  --+|[img]https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/78e35e86-bea7-4c7e-9dd8-96d469fcebb9/de41ert-eac28849-2e34-4f41-9ac7-39575fe19735.jpg/v1/fill/w_1024,h_1707,q_75,strp/dnd_5e_spellcard__toll_the_dead_by_lazyselkie_de41ert-fullview.jpg?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7ImhlaWdodCI6Ijw9MTcwNyIsInBhdGgiOiJcL2ZcLzc4ZTM1ZTg2LWJlYTctNGM3ZS05ZGQ4LTk2ZDQ2OWZjZWJiOVwvZGU0MWVydC1lYWMyODg0OS0yZTM0LTRmNDEtOWFjNy0zOTU3NWZlMTk3MzUuanBnIiwid2lkdGgiOiI8PTEwMjQifV1dLCJhdWQiOlsidXJuOnNlcnZpY2U6aW1hZ2Uub3BlcmF0aW9ucyJdfQ.SkmADQJStdxW6VFB07pYVFeBbB6fDLAKgEHfxQVMK0k[/img]
+  -->PlayEffects|none;bomb-death;none;Toll The Dead
+  --+|@{target|token_name} made a [$SavingThrow] Wisdom Saving Throw.  [$DC] was required.
+  --?[$SavingThrow] -ge [$DC]|Miss
+
+  --=DieAmount|@{selected|level} + 1 \ 6 + 1
+  --&vuln|
+  --?"@{target|npc_vulnerabilities}" -inc "necrotic"|DoubleD
+  --?"@{target|npc_resistances}" -inc "necrotic"|HalfD
+  --?"@{target|npc_immunities}" -inc "necrotic"|immune
+  --^gettoit|
+  --:HalfD|
+  --&vuln| \ 2 [Resistant]
+  --^gettoit|
+  --:DoubleD|
+  --&vuln| * 2 [Vulnerable]
+  --:gettoit|
+  --?[*T:t-bar1_value] -ge [*T:t-bar1_max]|normal
+  --=Damage|[$DieAmount]d12[&vuln]
+  --^Extra|
+  --:normal|
+  --=Damage|[$DieAmount]d8[&vuln]
+  --:Extra|
+
+  --:Hit|
+  --+Hit|@{target|token_name} failed their saving throw and took [$Damage] necrotic damage.
+  --@alter|_target|@{target|token_id} _bar|1 _amount|-[$Damage]  
+  --X|
+
+  --:Miss|
+  --+Miss|@{target|token_name} succeeded their saving throw.  The tolling bell had no effect.
+  --X|
+
+  --:immune|
+  --+|@{target|token_name} is immune to necrotic damage.  The Spell has no effect.
+  --X|
+
+  --:PlayEffects|Parameters are : source effect; target effect; line effect; sound effect
+  --vtoken|@{selected|token_id} [%1%]
+  --vtoken|@{target|token_id} [%2%]
+  --vbetweentokens|@{selected|token_id} @{target|token_id} [%3%]
+  --@roll20AM|_audio,play,nomenu|Toll the Dead
+  --<|
+}}

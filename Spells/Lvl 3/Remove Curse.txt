@@ -1,0 +1,28 @@
+!scriptcard {{ 
++++5ETools+++
+  --#emoteBackground|#transparent
+  --#titleCardBackground|#ffea00
+  --#titlefontsize|1.75em
+  --#titlefontlineheight|1.75em
+  --#titleFontColor|white
+  --#titlefontface|Shadows Into Light
+  --#subtitleFontSize|12px
+  --#subtitleFontFace|Verdana
+  --#evenRowBackground|#B6AB91
+  --#evenRowFontColor|#000000
+  --#oddRowBackground|#CEC7B6
+  --#oddRowFontColor|#000000
+
+  --#sourceToken|@{selected|token_id}
+
+  --#title|Remove Curse
+  --#rightsub|Touch
+  -->Lib5E_Warlock_GetAndCheckSlotInformation|
+
+  --#emoteText|[*S:character_name] removes all curses from their target.
+  --+|At your touch, all curses affecting one creature or object end. If the object is a cursed magic item, its curse remains, but the spell breaks its owner’s attunement to the object so it can be removed or discarded.
+  -->Lib5E_DeductSpellSlot|[*S:character_id];[$SlotLevel]
+  --#leftsub|Spell Slots Left [$_Lib5ESlotsExpended]
+  --X|
+
+}}

@@ -1,0 +1,39 @@
+!scriptcard {{ 
+  --#reentrant|@{selected|character_id}
+
++++5ETools+++
+
+--/|                >>>>> Formatting <<<<<
+  --#emoteBackground|#transparent
+  --#titleCardBackground|#b600f2
+  --#titlefontsize|1.75em
+  --#titlefontlineheight|1.75em
+  --#titleFontColor|white
+  --#titlefontface|Shadows Into Light
+  --#subtitleFontSize|12px
+  --#subtitleFontFace|Verdana
+  --#evenRowBackground|#B6AB91
+  --#evenRowFontColor|#000000
+  --#oddRowBackground|#CEC7B6
+  --#oddRowFontColor|#000000
+  --#whisper|self,GM
+
+  --#title|Spiritual Weapon
+  --#sourceToken|@{selected|token_id}
+ --#rightsub|Range 60 ft
+
+  -->Lib5E_GetAndCheckSlotInformation|2
+
+  --#leftsub|Level [$SlotLevel.Raw] Evocation Spell
+
+  --#whisper|
+
+  --#emoteText|[*S:character_name] summons a Spiritual Weapon.
+
+  --+Spell Token|Use a spell token to control the spiritual weapon.
+
+  -->Lib5E_DeductSpellSlot|[*S:character_id];[$SlotLevel]
+  --!a:[*S:character_id]|SPWeaponLvl:[$SlotLevel]
+
+  --X
+}}

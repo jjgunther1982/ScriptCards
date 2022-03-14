@@ -1,0 +1,151 @@
+!script {{
+  --#reentrant|@{selected|character_id}  ​
+  --/|Script Name : 5E Fireball
+  --/|Version     : 1.1
+  --/|Requires SC : 1.3.1+
+  --/|Author      : Kurt Jaegers
+
+  --/|Description : Deals fireball damage to all tokens that represent creations in a 20' radius around target token
+  --/|Set up the card appearance
+  --#title|@{selected|character_name} uses Necklace of Fireball!
+  --#bodyFontSize|12px
+  --#titlecardbackground|#800000
+  --#leftsub|Save DC 15
+  --#sourceToken|@{selected|token_id}
+  --#whisper|self,GM
+
+  -->GetAndCheckAmmoInformation|[*S:character_id];Necklace of Fireballs;Ammoname;Ammo
+
+  --/|Get a spell slot level from the caster.
+  --+How Many Balls do you want to use?|
+  --:BallLoop|
+  --=Balls|[$Balls] + 1
+  --+|[rbutton][$Balls.Raw]::OnTheLevel;[$Balls.Raw][/rbutton]
+  --?[$Balls] -lt [$Ammo] -and -lt 7|BallLoop
+  --X|
+  --:OnTheLevel|
+  --#whisper|
+  --+|[img]https://media2.giphy.com/media/7Xov9qZ44Mq0qkCN9Q/giphy.gif?cid=ecf05e470fj035lmr4x9jeplh4stwbxvvj8jx69sm3ukttyy&rid=giphy.gif&ct=g[/img]
+  --=SpellLevel|[&reentryval] + 2
+  --=Ammo|[$Ammo] - [&reentryval]
+  --#rightsub|Balls Used: [&reentryval]
+
+  --/|Calculate damage based on spell slot. Fireball is 8d6 for 3rd level, so 5+SpellLevel d6 total.
+  --=DamageDice|[$SpellLevel.Total] + 5
+  --=Damage|[$DamageDice.Total]d6
+  --=HalfDamage|[$Damage.Total] \ 2
+
+  --/|Since we want to be able to hover over a roll and see the dice details, output the rolled damage at the
+  --/|top of the card. If all critters make their save, the half damage roll won't contain the details.
+  --+|[c][b]Damage Roll: [/b][$Damage][/c]
+  --+|&nbsp;
+
+  --/|Get all tokens on the page into the "alltokens" array
+  --~|array;pagetokens;alltokens;@{target|token_id}
+
+  --/|Create the "inRange" array. It will have a blank item in it to begin with, which we will remove later.
+  --~|array;define;inRange;
+
+  --/|Loop through all of the tokens in "alltokens" to check their distance
+  --~tokenid|array;getfirst;alltokens
+  --?[&tokenid] -eq ArrayError|endOutput
+  --:loopCheck|
+
+  --/|Skip targets that are not on the token layer or that don't represent creatures
+  --?[*[&tokenid]:t-layer] -ne objects|continue
+  --?"[*[&tokenid]:t-represents]" -ninc "-"|continue
+
+  --/|Check the distance between the target token and the current array token. 20 feet is 4 units
+  --~dist|euclideandistance;@{target|token_id};[&tokenid]
+  --?[$dist] -gt 4|continue
+
+  --/|If we didn't skip over this part, the token is within 20 feet, so add it to the inRange array
+  --~|array;add;inRange;[&tokenid]
+  --:continue|
+  --~tokenid|array;getnext;alltokens
+  --?[&tokenid] -ne ArrayError|loopCheck
+
+  --/|Remove the dummy first item in the inRange array
+  --~|array;removeat;inRange;0
+
+  --/|Loop through the inRange tokens and roll saves for each one and apply damage
+  --~tokenid|array;getfirst;inRange
+  --?[&tokenid] -eq ArrayError|endOutput
+  --:loopDisplay|
+  -->MakeSavingThrow|[&tokenid];dexterity;15;[$Damage.Total];fire;thisTokenDamage;saveResult;dex
+  --+[*[&tokenid]:character_name]:|Save [$savingThrow] [r][$thisTokenDamage] fire damage[/r]
+
+  --/|Put a burn-fire visual effect on impacted tokens
+  --vtoken|[&tokenid] burn-fire
+
+  --/|Get the next token and continue the loop until we run out.
+  --~tokenid|array;getnext;inRange
+  --?[&tokenid] -ne ArrayError|loopDisplay
+
+  --/|Add some extra visual effects - a nova-fire at the target, and a beam-fire from source to target
+  --vtoken|@{target|token_id} nova-fire
+  --vbetweentokens|@{selected|token_id} @{target|token_id} beam-fire
+
+  --:endOutput|
+  -->AmmoSpent|
+  --@roll20AM|_audio,play,nomenu|Fireball
+  --X|
+
+  --/|Subroutine to make saving throws and calculate damage amounts
+  --:MakeSavingThrow|tokenid;savetype;dc;damage;damagetype;damagevariable;saveresultvariable;shortabilityname
+  --?"X[*[%1%]:npc_[%8%]_save_base]" -eq "X"|>set_string;baseSaveBonus;|>set_string;baseSaveBonus; + + [*[%1%]:npc_[%8%]_save_base]
+  --=savingThrow|1d20 + [*[%1%]:[%2%]_save_bonus] [&baseSaveBonus]
+  --&dmgmult|
+  --?[$savingThrow] -ge [%3%]|>set_string;dmgmult; \ 2
+  --?[$savingThrow] -lt [%3%]|>set_string;[%7%];fail
+  --?[$savingThrow] -ge [%3%]|>set_string;[%7%];success
+  --?"[*[%1%]:npc_resistances]" -inc "[%5%]" -and [$savingThrow] -lt [%3%]|>set_string;dmgmult; \ 2
+  --?"[*[%1%]:npc_resistances]" -inc "[%5%]" -and [$savingThrow] -ge [%3%]|>set_string;dmgmult; * 0
+  --?"[*[%1%]:npc_vulnerabilities]" -inc "[%5%]" -and [$savingThrow] -ge [%3%]|>set_string;dmgmult;
+  --?"[*[%1%]:npc_vulnerabilities]" -inc "[%5%]" -and [$savingThrow] -lt [%3%]|>set_string;dmgmult; * 2
+  --?"[*[%1%]:npc_immunities]" -inc "[%5%]"|>set_string;dmgmult; * 0
+    --=[%6%]|[%4%] [&dmgmult]
+  -->ApplyDamageTokenmod|[%1%];1;[$[%6%]]
+  --<|
+  --:set_string|mod_variable;value
+  --&[%1%]|[%2%]
+  --<|
+  
+  --/|Subroutine to apply damage with TokenMod. Could be replcaed with alterbars or chatsetattr
+  --:ApplyDamageTokenmod|Parameters are tokenid;bar#;amount
+  --@token-mod|_ignore-selected _ids [%1%] _set bar[%2%]_value|-[%3%]
+  --<|
+
+--:GetAndCheckAmmoInformation|character_id;resourceName;Ammoname;Ammo
+--?"[%2%]" -eq "[*[%1%]:class_resource_name]"|_Lib5E_IsResourceClass
+--?"[%2%]" -eq "[*[%1%]:other_resource_name]"|_Lib5E_IsResourceOther
+--Rfirst|[%1%];repeating_resource
+--:_Lib5E_ResourceLoop|
+--?"[*R:resource_left_name]" -eq "[%2%]"|_Lib5E_IsResourceLeft
+--?"[*R:resource_right_name]" -eq "[%2%]"|_Lib5E_IsResourceRight
+--Rnext|
+--?"[*R:resource_left_name]" -ne "NoRepeatingAttributeLoaded"|_Lib5E_ResourceLoop
+--&[%3%]|NotFound --*IsNotFound| --&[%4%]|NotFound --=[%4%]|0 
+--<|
+--:_Lib5E_IsResourceClass| --*IsClass| --&[%3%]|class_resource_name --&[%4%]|class_resource --=[%4%]|[*[%1%]:class_resource] --<|
+--:_Lib5E_IsResourceOther| --*IsOther!| --&[%3%]|other_resource --&[%4%]|other_resource --=[%4%]|[*[%1%]:other_resource] --<|
+--:_Lib5E_IsResourceLeft| --*IsLeft| --&[%3%]|[*R>resource_left_name] --&[%4%]|[*R>resource_left] --=[%4%]|[*R:resource_left] --<|
+--:_Lib5E_IsResourceRight| --*IsRight| --&[%3%]|[*R>resource_right_name] --&[%4%]|[*R>resource_right] --=[%4%]|[*R:resource_right] --<|
+--<|
+
+
+  --:AmmoAvailable|
+  --?[$Ammo] -eq 0|NoAmmoLeft
+  --<|
+
+  --:NoAmmoLeft|
+  --#whisper|
+  --+|[*S:character_name] has no [&ResourceUsed] left.
+  --#emoteText|[*S:character_name] is all out of [&ResourceUsed].
+  --X|NoSlotsLeftStop
+
+  --:AmmoSpent|
+  --@setattr|_charid [*S:character_id] _[&Ammo]|[$Ammo] _silent
+  --+|Necklace of Fireballs Left: [$Ammo] 
+  --<|
+}}

@@ -1,0 +1,36 @@
+!scriptcard {{ 
++++5ETools+++
+  --#emoteBackground|#transparent
+  --#titleCardBackground|#ffea00
+  --#titlefontsize|1.75em
+  --#titlefontlineheight|1.75em
+  --#titleFontColor|white
+  --#titlefontface|Shadows Into Light
+  --#subtitleFontSize|12px
+  --#subtitleFontFace|Verdana
+  --#evenRowBackground|#B6AB91
+  --#evenRowFontColor|#000000
+  --#oddRowBackground|#CEC7B6
+  --#oddRowFontColor|#000000
+
+  --#sourceToken|@{selected|token_id}
+  -->Lib5E_Warlock_GetAndCheckSlotInformation|
+
+
+  --#title|Darness
+  --#leftsub|Concentration up to 10 minutes
+  --#rightsub|Range 60 ft
+  --#emoteText|[*S:character_name] creates a 15 ft cube of magical darkness.
+  --+|Use the Darkness spell token to mark location.
+  -->PlayEffects|@{selected|token_id};none;none;none;none;none
+--:Lib5E_DeductSpellSlot|[*S:character_id];[$SlotLevel]
+  --X|
+
+  --:PlayEffects|Parameters are : sourcetoken; targettoken; source effect; target effect; line effect; sound effect
+  --vtoken|[%1%] [%3%]
+  --vtoken|[%2%] [%4%]
+  --vbetweentokens|[%1%] [%2%] [%5%]
+  --@roll20AM|_audio,play,nomenu|[%6%]
+  --<|
+
+}}

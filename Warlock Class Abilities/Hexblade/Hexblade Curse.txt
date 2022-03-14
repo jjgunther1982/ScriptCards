@@ -1,0 +1,36 @@
+!scriptcards{{
++++5ETools+++
+  --:Hexblade's Curse|
+  --#title|Hexblade's Curse
+  --#rightsub|Class Ability
+  --#leftsub|30 Feet
+
+  --#sourceToken|@{selected|token_id}
+  --#targetToken|@{target|token_id}
+
+  --/This will detect how far, and if it is out of range for a flat surface.
+  -->Lib5E_HowFarAway|[*S|t-id];[*T:t-id];30
+  --~HowFarAway|distance;@{selected|token_id};@{target|token_id}
+  --=HowFar|[$HowFarAway] * 5
+  --?[$HowFar] -gt 30|tooFar
+
+
+
+  -->Lib5E_FindResource|[*S:character_id];Hexblade's Curse [s];Ammoname;Ammo
+  -->Lib5E_AmmoAvailable|
+
+  --#emoteText| @{selected|token_name} has chosen @{target|token_name} as their next victim of vengance.
+  --@token-mod| _ids @{target|token_id} _set statusmarkers|death-zone
+  --@setattr|_charid [*S:character_id] _hexblade|[*T:t-id] _silent
+  --@act| -1| 10| _Hexblade Curse Braeden
+
+  --:Lib5E_AmmoSpent|[*S:character_id];Ammo
+
+  --:AllDone|
+  --X|
+
+  --:tooFar|
+  --+|The target is too far away. 
+  --X|
+
+}}

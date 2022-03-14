@@ -1,0 +1,102 @@
+!Scriptcard {{ 
+  --#reentrant|@{selected|character_id}
+  --#emoteBackground|#transparent
+  --#titleCardBackground|#ffea00
+  --#titlefontsize|1.75em
+  --#titlefontlineheight|1.75em
+  --#titleFontColor|black
+  --#titlefontface|Shadows Into Light
+  --#subtitleFontSize|12px
+  --#subtitleFontFace|Verdana
+  --#evenRowBackground|#B6AB91
+  --#evenRowFontColor|#000000
+  --#oddRowBackground|#CEC7B6
+  --#oddRowFontColor|#000000
+  --#whisper|self,GM
+  --#sourceToken|@{selected|token_id}
+
+  -->GetAndCheckSlotInformation|
+
+  --#Title|Magic Weapon
+  --#leftsub|Class Ability
+  --#rightsub|Action
+  --+Choose your weapon to create.|[rbutton]Dagger::Chosen;Dagger[/rbutton][rbutton]Shortsword::Chosen;Shortsword[/rbutton][rbutton]Longbow::Chosen;Longbow[/rbutton]
+  --X|
+  --:Chosen|
+
+
+  --?[*S:EnsStr] -ne 0|TurnOffEnsStrk
+  --:EnsStrk|
+  --?"[*S:marked]" -inc "-"|TurnOffHuntersMark
+  --:HuntMar|
+  --?[*S:Zephyr] -ne 0|TurnOffZeph
+  --:Zeph|
+
+
+  --#whisper|
+  --&Weapon|[&reentryval]
+  --#emoteText|@{selected|character_name} makes their [&Weapon] magical.
+  --@setattr|_charid [*S:character_id] _MagicWeapon|[&Weapon] _silent
+  --?[$SlotLevel] -ge 2 and -lt 4|>MagLVL;1
+  --?[$SlotLevel] -ge 4 and -lt 6|>MagLVL;2
+  --?[$SlotLevel] -ge 6|>MagLVL;3
+  --:MagLVL|
+  --@setattr|_charid [*S:character_id] _MagicWeapLVL|[%1%] _silent
+  -->PlayEffects|@{selected|token_id};none;burn-magic;none;none;Magic Weapon
+  --@token-mod| _ids [*S:t-id] _set statusmarkers|Aura
+  -->DeductSpellSlot|
+  --X|
+
+
+  --:GetAndCheckSlotInformation|
+  --+What Spell Slot Level?|Click a button bellow to select your spell slot level.
+  --+|[rbutton]2::knowYourLVL1;2[/rbutton][rbutton]3::knowYourLVL1;3[/rbutton][rbutton]4::knowYourLVL1;4[/rbutton][rbutton]5::knowYourLVL1;5[/rbutton][rbutton]6::knowYourLVL1;6[/rbutton][rbutton]7::knowYourLVL1;7[/rbutton][rbutton]8::knowYourLVL1;8[/rbutton][rbutton]9::knowYourLVL1;9[/rbutton]
+  --X|
+  --:knowYourLVL1|
+  --=SlotLevel|[&reentryval]
+  --=SlotsTotal|0
+  --=SlotsExpended|[*S:lvl[$SlotLevel]_slots_expended]
+  --?[$SlotsExpended.Raw] -eq [$SlotsTotal.Raw]|NoSlotsLeft
+  --<|
+
+
+  --:DeductSpellSlot|
+  --=SlotsLeft|[$SlotsExpended] - 1
+  --@setattr|_charid [*S:character_id] _lvl[$SlotLevel]_slots_expended|[$SlotsLeft] _silent
+  --+|Level [$SlotLevel] Slots Left: [$SlotsLeft] 
+  --X|Full Stop
+
+  --:NoSlotsLeft|
+  --+|[*S:character_name] has no level [$SlotLevel.Total] spell slots available.
+  --#emoteText|[*S:character_name] tries to cast a spell but farts in instead.
+  -->PlayEffects|@{selected|token_id};none;bomb-acid;none;none;Fart
+  --X|NoSlotsLeftStop
+
+  --:TurnOffEnsStrk|
+  --+Ensnaring Srike|@{selected|token_name} loses focus ensnaring strike.
+  --@setattr|_charid [*S:character_id] _EnsStr|0 _silent
+  --*|Get rid of the turn tracker.
+  --@token-mod| _set tint_color|transparent _ids @{character_id}
+  -->EnsStrk|
+
+  --:TurnOffHuntersMark|
+  --+Hunter's Mark|@{selected|token_name} loses focus Hunter's Mark.
+  --*|Remove the token icon for [*[*S:marked]:t-name].
+  --@setattr|_charid [*S:character_id] _marked|0 _silent
+  -->HuntMar|
+
+  --:TurnOffZeph|
+  --+Zephyr Strike|@{selected|token_name} slows down.
+  --*|Get rid of the turn tracker.
+  --@setattr|_charid [*S:character_id] _Zephyr|0 _silent
+  --@roll20AM|_audio,play,nomenu|Shrink
+  --@token-mod| _set tint_color|transparent _ids @{character_id}
+  -->Zeph|
+
+  --:PlayEffects|Parameters are : sourcetoken; targettoken; source effect; target effect; line effect; sound effect
+  --vtoken|[%1%] [%3%]
+  --vtoken|[%2%] [%4%]
+  --vbetweentokens|[%1%] [%2%] [%5%]
+  --@roll20AM|_audio,play,nomenu|[%6%]
+  --<|
+}}

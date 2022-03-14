@@ -1,0 +1,31 @@
+!scriptcard {{ 
++++5ETools+++
+  --#emoteBackground|#transparent
+  --#titleCardBackground|#ffea00
+  --#titlefontsize|1.75em
+  --#titlefontlineheight|1.75em
+  --#titleFontColor|white
+  --#titlefontface|Shadows Into Light
+  --#subtitleFontSize|12px
+  --#subtitleFontFace|Verdana
+  --#evenRowBackground|#B6AB91
+  --#evenRowFontColor|#000000
+  --#oddRowBackground|#CEC7B6
+  --#oddRowFontColor|#000000
+
+  --#sourceToken|@{selected|token_id}
+
+  --#title|Cloud of Daggers
+  --#rightsub|Range 60 ft
+  -->Lib5E_Warlock_GetAndCheckSlotInformation|
+
+  --#emoteText|[*S:character_name] creates a 5 ft cube of whirling daggers.
+  --=DamageDie|[$SlotLevel] * 2
+  --+|If anything enters or starts their turn in the cube, they take [$DamageDie.Raw]d4 slashing damage.
+  --+|Use Cloud of Daggers spell token to mark location.
+  --@token-mod| _ids [*S:t-id] _set statusmarkers|Aura
+  --:Lib5E_DeductSpellSlot|[*S:character_id];
+  --#leftsub|Spell Slots Left [$Slotexpended];[$SlotLevel]
+  --X|
+
+}}

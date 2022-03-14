@@ -1,0 +1,51 @@
+!scriptcards{{
++++5ETools+++
+  --#reentrant|@{selected|character_id}  ​
+  --#emoteBackground|#transparent
+  --#titleCardBackground|#ffea00
+  --#titlefontsize|1.75em
+  --#titlefontlineheight|1.75em
+  --#titleFontColor|white
+  --#titlefontface|Shadows Into Light
+  --#subtitleFontSize|12px
+  --#subtitleFontFace|Verdana
+  --#evenRowBackground|#B6AB91
+  --#evenRowFontColor|#000000
+  --#oddRowBackground|#CEC7B6
+  --#oddRowFontColor|#000000
+  --#sourceToken|@{selected|token_id}
+  --#targetToken|@{target|token_id}
+  --#whisper|self,GM
+  --#title|Hex
+  --#rightsub|Ranged Spell
+  --#leftsub|90 Feet
+  --#sourceToken|@{selected|token_id}
+  --#targetToken|@{target|token_id}
+
+  --+Is this a New Cast or are you Changing Targets?|[rbutton]New Cast::Target;1[/rbutton][rbutton]Changing Targets::Changing;0[/rbutton]
+  --X|
+  --:Changing|
+  --=SlotLevel|[&reentryval]
+  --?[$SlotLevel] -eq 0|AddCast
+  --:Target|
+  -->Lib5E_Warlock_GetAndCheckSlotInformation|
+  --:AddCast|
+
+  --+What ability check do you want the taget to be disadvantaged|[rbutton]Strength::AbilityDis;Strength[/rbutton][rbutton]Dexterity::AbilityDis;Dexterity[/rbutton][rbutton]Wisdom::AbilityDis;Wisdom[/rbutton][rbutton]Constitution::AbilityDis;Constitution[/rbutton][rbutton]Charisma::AbilityDis;Charisma[/rbutton][rbutton]Intelligence::AbilityDis;Intelligence[/rbutton]
+  --X|
+  --:AbilityDis|
+  --#whisper|
+  --&Ability|[&reentryval]
+  --#emoteText| @{selected|token_name} curses @{target|token_name}.
+  --@token-mod| _ids @{target|token_id} _set statusmarkers|death-zone
+  -->Lib5E_Global_mod_finder|[*S:character_id];damage;Hex
+  --@setattr|_charid [*S:character_id] _repeating_[&ModType]mod_$[$ModLoop.Raw]_global_[&ModType]_active_flag|1 _silent
+  --@setattr|_charid [*S:character_id] _Hex|[*T:t-id] _silent
+  --+|@{target|token_name} has disadvantage on [&Ability] ability checks.
+  --?[$SlotLevel] -eq 0|AllDone
+  --@token-mod| _ids [*S:t-id] _set statusmarkers|Aura
+  -->Lib5E_DeductSpellSlot|[*S:character_id];[$SlotLevel]
+  --:AllDone|
+  --X|
+
+}}

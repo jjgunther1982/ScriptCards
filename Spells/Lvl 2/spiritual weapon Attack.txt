@@ -1,0 +1,141 @@
+!scriptcards{{
+  --#reentrant|@{selected|character_id}
+--/|                >>>>> Formatting <<<<<
++++5ETools+++
+  --#emoteBackground|#transparent
+  --#titleCardBackground|#b600f2
+  --#titlefontsize|1.75em
+  --#titlefontlineheight|1.75em
+  --#titleFontColor|white
+  --#titlefontface|Shadows Into Light
+  --#subtitleFontSize|12px
+  --#subtitleFontFace|Verdana
+  --#evenRowBackground|#B6AB91
+  --#evenRowFontColor|#000000
+  --#oddRowBackground|#CEC7B6
+  --#oddRowFontColor|#000000
+  --#whisper|self,gm
+  --#Title|Spirtual Weapon Attack
+
+  --#sourceToken|@{selected|token_id}
+  --#targetToken|@{target|token_id}
+
+
+  --&Weapon|Spiritual Weapon
+  --=Weap|Spiritual Weapon
+  --=DamageDieAmount|[*-MYpM2C9Exj-WfmCfIlJ:SPWeaponLvl] \ 2
+  --&DamageAmount|[$DamageDieAmount]d8
+  --&DamageType|force
+  --&DamageMod|[*-MYpM2C9Exj-WfmCfIlJ:charisma_mod]
+  --&Range|5 Ft
+  --&AttackType|melee
+  --&Magical|no
+  --&MagicLvl|0
+
+
+  --#leftsub|[&AttackType] attack
+  --#rightsub|[&Range]
+
+  -->Lib5E_Profficient|
+
+  --+Choose an attack roll type.|[rbutton]Standard::knowYourRoll1;1d20[/rbutton][rbutton]Advantage::knowYourRoll1;2d20kh1[/rbutton][rbutton]Disadvantage::knowYourRoll1;2d20kl1[/rbutton]
+
+  --X| DONE
+
+  --:knowYourRoll1|
+  -->CheckBless|
+  --#whisper|self,gm
+  --=AttackRoll|[&reentryval] + [*-MYpM2C9Exj-WfmCfIlJ:spell_attack_bonus] [Spell Attack Bonus][&BlessRoll]
+
+  -->Bardic|-MYpM2C9Exj-WfmCfIlJ
+
+  --#whisper|
+  -->Lib5E_RollResults|
+
+  --?[$AttackRoll.Base] -eq 20|Crit
+  --?[$AttackRoll.Base] -eq 1|Fumble
+  --=AttackRoll|[$AttackRoll] + [$BardicRoll]
+  --?[*T:npc_ac] -gt 0|=AC;[*T:npc_ac]|=AC|[*T:AC]
+  --:TryAgain|
+  --?[$AttackRoll] -ge [$AC]|Hit
+
+  --:Miss|
+  --+Miss|Your attack missed!
+  -->GodsBlessing|
+  --:AfterGod|
+  --X|
+
+  --:Hit|
+  -->Lib5E_Vulnerable|
+  -->RollDamage|
+  -->Lib5E_Attack_PlayEffects|none;none;none;[&Weapon]
+  --+Hit!|Your attack hit for [$Damage] [&DamageType] damage!
+  --X|
+
+  --:Fumble|
+  --+Fumble|The attack went really bad!
+  --+Bad Stuff|The Spiritual Blade dissapears.
+  -->Lib5E_Attack_PlayEffects|none;none;none;Failure
+  --X|
+
+  --:Crit|
+  -->Lib5E_Vulnerable|
+  -->RollDamage|crit
+  -->Lib5E_Attack_PlayEffects|none;none;none;[&Weapon]
+  --+Critical Hit|You deal [$Damage] [&DamageType] damage CRITICAL HIT!
+  --X|
+
+  --:CheckBless|
+  -->Lib5E_Global_mod_finder|[*-MYpM2C9Exj-WfmCfIlJ:character_id];tohit;Bless
+  --?[*R:global_attack_active_flag] -eq 1|Lib5E_Blessed
+  --&BlessRoll|
+  --<|
+  --:Lib5E_Blessed|
+  --&BlessRoll|1d4 [Bless]
+  --<|
+
+
+  --:RollDamage|
+  --&crit|[%1%]
+  --?[&crit] -inc "crit"|CritDamage
+  --=Damage|[&DamageAmount] + [&DamageMod][&MagWeapDamBonus][&vuln]
+  --<|
+  --:CritDamage|
+  --=Damage|[&DamageAmount] + [&DamageMod] + [&DamageAmount] [CRIT][&MagWeapDamBonus][&vuln]
+  --<|
+
+  --:GodsBlessing|
+  --?[*-MYpM2C9Exj-WfmCfIlJ:class_resource] -eq 0|AfterGod
+  --?[$Loop] -eq 1|AfterGod
+  --=Loop|1
+  --+Do you want to use Favored by the Gods?|[rbutton]Yes::FavorYes[/rbutton][rbutton]No::AfterGod[/rbutton]
+  --X|
+  --:FavorYes|
+  --=FavoredRoll|2d4
+  --+Help From the Gods|You Rolled [$FavoredRoll]
+  --=AttackRoll|[$AttackRoll] + [$FavoredRoll]
+  --+Total|Your total is now [$AttackRoll].
+  --@setattr|_charid [*S:character_id] _class_resource|0 _silent
+  -->TryAgain|
+
+  --:Bardic|
+  --=BardicRoll|0
+  -->Lib5E_Global_mod_finder|[*-MYpM2C9Exj-WfmCfIlJ:character_id];tohit;Bardic Inspiration
+  --?[*R:global_attack_active_flag] -eq 1|BardicYes1
+  --<|
+  --:BardicYes1|
+  --+|You rolled a [$AttackRoll] for attack.  Do you want to use Bardic Inspiration?[rbutton]Yes::BardYes1[/rbutton][rbutton]No::BardicNo1[/rbutton]
+  --X| DONE
+  --:BardYes1|
+  -->_Lib5EAddGAM1;[*R:global_attack_name];[*R:global_attack_roll]
+  --@setattr|_charid [*-MYpM2C9Exj-WfmCfIlJ:character_id] _Bard|0 _silent
+  -->Lib5E_Global_mod_finder|[*-MYpM2C9Exj-WfmCfIlJ:character_id];tohit;Bardic Inspiration;Attack
+  --@setattr|_charid [*-MYpM2C9Exj-WfmCfIlJ:character_id] _repeating_[&ModType]mod_$[$ModLoop]_global_[&ModType2]_active_flag|0 _silent
+  -->Lib5E_Global_mod_finder|[*-MYpM2C9Exj-WfmCfIlJ:character_id];save;Bardic Inspiration;Save
+  --@setattr|_charid [*-MYpM2C9Exj-WfmCfIlJ:character_id] _repeating_[&ModType]mod_$[$ModLoop]_global_[&ModType2]_active_flag|0 _silent
+  -->Lib5E_Global_mod_finder|[*-MYpM2C9Exj-WfmCfIlJ:character_id];skill;Bardic Inspiration;Skill
+  --@setattr|_charid [*-MYpM2C9Exj-WfmCfIlJ:character_id] _repeating_[&ModType]mod_$[$ModLoop]_global_[&ModType2]_active_flag|0 _silent
+  --=BardicRoll|1d6 [Bardic Inspiration]
+  --:BardicNo1|
+  --<|
+}}

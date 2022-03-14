@@ -1,0 +1,96 @@
+!scriptcard {{ 
++++5ETools+++
+  --#reentrant|@{selected|character_id}  
+--/|                >>>>> Formatting <<<<<
+  --#emoteBackground|#transparent
+  --#titleCardBackground|#b600f2
+  --#titlefontsize|1.75em
+  --#titlefontlineheight|1.75em
+  --#titleFontColor|white
+  --#titlefontface|Shadows Into Light
+  --#subtitleFontSize|12px
+  --#subtitleFontFace|Verdana
+  --#evenRowBackground|#B6AB91
+  --#evenRowFontColor|#000000
+  --#oddRowBackground|#CEC7B6
+  --#oddRowFontColor|#000000
+  --#whisper|self,GM
+
+  --#title|Bane
+  --#sourceToken|@{selected|token_id}
+
+  -->Lib5E_GetAndCheckSlotInformation|1
+  --#whisper|self,GM
+  --=BlessCount|[$SlotLevel] + 2  
+  --?[$SlotLevel] -eq 1|AskHowMany
+  --:AfterHowMany|
+  --=DisplayCount|1
+  --#leftsub|Slot level [$SlotLevel]
+  --#rightsub|Ranged Debuff DC:[*S:spell_save_dc]
+  --#emoteText|@{selected|character_name} uses a level [$SlotLevel.Raw] spell slot to give [$BlessCount.Raw] enemies bane!
+  --:MissileLoop|
+  --?[$DisplayCount] -gt 1|NextTarget
+  --+Target|[rbutton]Click this button to select your first target.::DoIt;&#64;{target|token_id}[/rbutton] 
+  --X|
+  --:NextTarget|
+  --+Target|[rbutton]Click this button to select your next target.::DoIt;&#64;{target|token_id}[/rbutton] 
+  --X|
+  --:DoIt|
+  -->FireMissile|[$DisplayCount.Raw]
+  --:AfterMissile|
+  --=DisplayCount|[$DisplayCount] + 1
+  --?[$DisplayCount] -le [$BlessCount]|MissileLoop
+  -->Lib5E_DeductSpellSlot|[*S:character_id];[$SlotLevel]
+  --@token-mod| _ids [*S:t-id] _set statusmarkers|aura
+  --X|
+
+  -->DeductSpellSlot|
+  --#rightsub|Level [$SlotLevel] Left: [$SlotsRemaining] 
+  --X|
+
+  --:FireMissile|
+  --&ThisTarget|[&reentryval]
+  --#targettoken|[&reentryval]
+  --+Saving Throw|Ask the DM what saving throw [*T:t-name] gets to make.
+  --+|[rbutton]Standard::knowYourRoll1;1d20[/rbutton][rbutton]Advantage::knowYourRoll1;2d20kh1[/rbutton][rbutton]Disadvantage::knowYourRoll1;2d20kl1[/rbutton]
+
+  --X| DONE
+
+  --:knowYourRoll1|
+  --#whisper|
+  --=SavingThrow|[&reentryval] + [*T:charisma_save_bonus]
+  --+|[*[&ThisTarget]:character_name] made a [$SavingThrow] Charisma Saving Throw.
+  --?[$SavingThrow] -lt @{selected|spell_save_dc}|Hit
+  --+Miss|[*[&ThisTarget]:character_name]'s charm and good looks overpowered @{selected|token_name}'s attempt to cast bane.
+  --^moveOn|
+  --:Hit|
+  --+|The [*[&ThisTarget]:character_name] has Bane.
+  --@token-mod| _ids [*[&ThisTarget]:t-id] _set statusmarkers|purple
+  --@act| -1| 10| _Bane [*[&ThisTarget]:t-name]
+  -->PlayEffects|@{selected|token_id};[&ThisTarget];none;none;none;shrink
+  --:moveOn|
+  -->AfterMissile|
+
+  --:PlayEffects|Parameters are : sourcetoken; targettoken; source effect; target effect; line effect; sound effect
+  --vtoken|[%1%] [%3%]
+  --vtoken|[%2%] [%4%]
+  --vbetweentokens|[%1%] [%2%] [%5%]
+  --@roll20AM|_audio,play,nomenu|[%6%]
+  --<|
+
+  --:ApplyDamageTokenmod|Parameters are tokenid;bar#;amount
+  --+|[*[&ThisTarget]:t-token_id]
+  --@token-mod|_ignore-selected _ids [%1%] _set bar[%2%]_value|[%3%]
+   --<|
+
+  --:ApplyDamageAlterbars|
+  --@alter|_target|[%1%] _bar|[%2%] _amount|[%3%]
+  --<|
+
+   --:AskHowMany|
+  --+How Many Targets do you want to cast this spell one?|[rbutton]3::ThisMany;3[/rbutton][rbutton]2::ThisMany;2[/rbutton][rbutton]1::ThisMany;1[/rbutton]
+  --X|
+  --:ThisMany|
+  --=BlessCount|[&reentryval]
+  --^AfterHowMany|
+}}

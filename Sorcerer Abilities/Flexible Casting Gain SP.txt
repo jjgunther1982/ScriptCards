@@ -1,0 +1,46 @@
+!scriptcards{{
+  --#reentrant|@{selected|character_id}
+  --#Title|Flexible Casting 
+  --#leftsub|Class Ability 1 Bonus Action
+  --#rightsub|Gain Sorcery Points
+  --#sourceToken|@{selected|token_id}
+
+  --?[*S:repeating_resource_$0_resource_left] -eq [*S:repeating_resource_$0_resource_left_max]|Why
+
+  -->GetAndCheckSlotInformation|
+
+  --#emoteText|@{selected|token_name} converts a Level [$SlotLevel] spell slot to sourcery points.
+  --=ClassRes|[$SlotLevel] + @{selected|repeating_resource_$0_resource_left}
+  --?@{selected|level} -ge [$ClassRes]|GetItDone
+  --=ClassRes|@{selected|level}
+  --:GetItDone|
+  --@setattr|_charid [*S:character_id] _repeating_resource_$0_resource_left|[$ClassRes] _silent
+  -->DeductSpellSlot|
+
+  --:GetAndCheckSlotInformation|
+  --+What Spell Slot Level?|Click a button bellow to select your spell slot level.
+  --+|[rbutton]1::knowYourLVL1;1[/rbutton][rbutton]2::knowYourLVL1;2[/rbutton][rbutton]3::knowYourLVL1;3[/rbutton][rbutton]4::knowYourLVL1;4[/rbutton][rbutton]5::knowYourLVL1;5[/rbutton][rbutton]6::knowYourLVL1;6[/rbutton][rbutton]7::knowYourLVL1;7[/rbutton][rbutton]8::knowYourLVL1;8[/rbutton][rbutton]9::knowYourLVL1;9[/rbutton]
+  --X|
+  --:knowYourLVL1|
+  --=SlotLevel|[&reentryval]
+  --=SlotsTotal|0
+  --=SlotsExpended|[*S:lvl[$SlotLevel]_slots_expended]
+  --?[$SlotsExpended.Raw] -eq [$SlotsTotal.Raw]|NoSlotsLeft
+  --<|
+
+  --:DeductSpellSlot|
+  --=SlotsExpended|[$SlotsExpended] - 1
+  --@setattr|_charid [*S:character_id] _lvl[$SlotLevel]_slots_expended|[$SlotsExpended] _silent
+  --+|Level [$SlotLevel] Slots Left: [$SlotsExpended] 
+  --X|Full Stop
+
+  --:NoSlotsLeft|
+  --+|[*S:character_name] has no level [$SlotLevel.Total] spell slots available.
+  --#emoteText|[*S:character_name] tries to cast a spell but farts instead.
+  --X|NoSlotsLeftStop
+
+  --:Why|
+  --+|You are at max Sorcery Points silly.
+  --X|
+
+}}

@@ -1,0 +1,127 @@
+!script {{
++++5ETools+++
+  --/|Script Name : 5E Fireball
+  --/|Version     : 1.1
+  --/|Requires SC : 1.3.1+
+  --/|Author      : Kurt Jaegers
+  --#sourceToken|@{selected|token_id}
+  --/|Description : Deals fireball damage to all tokens that represent creations in a 20' radius around target token
+--/|                >>>>> Formatting <<<<<
+  --#emoteBackground|#transparent
+  --#titleCardBackground|#b600f2
+  --#titlefontsize|1.75em
+  --#titlefontlineheight|1.75em
+  --#titleFontColor|white
+  --#titlefontface|Shadows Into Light
+  --#subtitleFontSize|12px
+  --#subtitleFontFace|Verdana
+  --#evenRowBackground|#B6AB91
+  --#evenRowFontColor|#000000
+  --#oddRowBackground|#CEC7B6
+  --#oddRowFontColor|#000000
+  --#whisper|self,gm
+
+  --#title|@{selected|character_name} casts Fireball!
+  --#leftsub|Save DC @{selected|spell_save_dc}
+
+  --+Spell Token|Have the DM Put the spell token out for you to target the fireball.
+  --+|[rbutton]continue::letsgo;&#64;{target|token_id}[/rbutton]
+  --X|
+  --:letsgo|
+  --#targettoken|[&reentryval]
+  --&Target|[&reentryval]
+  --/|Get a spell slot level from the caster.
+  -->Lib5E_GetAndCheckSlotInformation|3
+  
+  --#rightsub|Slot Level: [$SpellLevel]
+
+  --/|Calculate damage based on spell slot. Fireball is 8d6 for 3rd level, so 5+SpellLevel d6 total.
+  --=DamageDice|[$SpellLevel.Total] + 5
+  --=Damage|[$DamageDice.Total]d6
+  --=HalfDamage|[$Damage.Total] \ 2
+
+  --/|Since we want to be able to hover over a roll and see the dice details, output the rolled damage at the
+  --/|top of the card. If all critters make their save, the half damage roll won't contain the details.
+  --+|[c][b]Damage Roll: [/b][$Damage][/c]
+  --+|&nbsp;
+
+  --/|Get all tokens on the page into the "alltokens" array
+  --~|array;pagetokens;alltokens;[&Target]
+
+  --/|Create the "inRange" array. It will have a blank item in it to begin with, which we will remove later.
+  --~|array;define;inRange;
+
+  --/|Loop through all of the tokens in "alltokens" to check their distance
+  --~tokenid|array;getfirst;alltokens
+  --?[&tokenid] -eq ArrayError|endOutput
+  --:loopCheck|
+
+  --/|Skip targets that are not on the token layer or that don't represent creatures
+  --?[*[&tokenid]:t-layer] -ne objects|continue
+  --?"[*[&tokenid]:t-represents]" -ninc "-"|continue
+
+  --/|Check the distance between the target token and the current array token. 20 feet is 4 units
+  --~dist|euclideandistance;[&Target];[&tokenid]
+  --?[$dist] -gt 4|continue
+
+  --/|If we didn't skip over this part, the token is within 20 feet, so add it to the inRange array
+  --~|array;add;inRange;[&tokenid]
+  --:continue|
+  --~tokenid|array;getnext;alltokens
+  --?[&tokenid] -ne ArrayError|loopCheck
+
+  --/|Remove the dummy first item in the inRange array
+  --~|array;removeat;inRange;0
+
+  --/|Loop through the inRange tokens and roll saves for each one and apply damage
+  --~tokenid|array;getfirst;inRange
+  --?[&tokenid] -eq ArrayError|endOutput
+  --:loopDisplay|
+  -->MakeSavingThrow|[&tokenid];dexterity;@{selected|spell_save_dc};[$Damage.Total];fire;thisTokenDamage;saveResult;dex
+  --+[*[&tokenid]:t-name]:|Save [$savingThrow] [r][$thisTokenDamage] fire damage[/r]
+
+  --/|Put a burn-fire visual effect on impacted tokens
+  --vtoken|[&tokenid] burn-fire
+
+  --/|Get the next token and continue the loop until we run out.
+  --~tokenid|array;getnext;inRange
+  --?[&tokenid] -ne ArrayError|loopDisplay
+
+  --/|Add some extra visual effects - a nova-fire at the target, and a beam-fire from source to target
+  --vtoken|[&Target] nova-fire
+  --vbetweentokens|@{selected|token_id} [&Target] beam-fire
+
+  --:endOutput|
+  -->Lib5E_DeductSpellSlot|[*S:character_id];[$SlotLevel]
+  --@roll20AM|_audio,play,nomenu|Fireball
+  --X|
+
+  --/|Subroutine to make saving throws and calculate damage amounts
+  --:MakeSavingThrow|tokenid;savetype;dc;damage;damagetype;damagevariable;saveresultvariable;shortabilityname
+  --?"X[*[%1%]:npc_[%8%]_save_base]" -eq "X"|>set_string;baseSaveBonus;|>set_string;baseSaveBonus; + + [*[%1%]:npc_[%8%]_save_base]
+  --=savingThrow|1d20 + [*[%1%]:[%2%]_save_bonus] [&baseSaveBonus]
+  --&dmgmult|
+  --?[$savingThrow] -ge [%3%]|>set_string;dmgmult; \ 2
+  --?[$savingThrow] -lt [%3%]|>set_string;[%7%];fail
+  --?[$savingThrow] -ge [%3%]|>set_string;[%7%];success
+  --?"[*[%1%]:npc_resistances]" -inc "[%5%]" -and [$savingThrow] -lt [%3%]|>set_string;dmgmult; \ 2
+  --?"[*[%1%]:npc_resistances]" -inc "[%5%]" -and [$savingThrow] -ge [%3%]|>set_string;dmgmult; * 0
+  --?"[*[%1%]:npc_vulnerabilities]" -inc "[%5%]" -and [$savingThrow] -ge [%3%]|>set_string;dmgmult;
+  --?"[*[%1%]:npc_vulnerabilities]" -inc "[%5%]" -and [$savingThrow] -lt [%3%]|>set_string;dmgmult; * 2
+  --?"[*[%1%]:npc_immunities]" -inc "[%5%]"|>set_string;dmgmult; * 0
+    --=[%6%]|[%4%] [&dmgmult] 
+  -->ApplyDamageTokenmod|[%1%];1;[$[%6%]]
+  --<|
+  --:set_string|mod_variable;value
+  --&[%1%]|[%2%]
+  --<|
+  
+  --/|Subroutine to apply damage with TokenMod. Could be replcaed with alterbars or chatsetattr
+  --:ApplyDamageTokenmod|Parameters are tokenid;bar#;amount
+  --@token-mod|_ignore-selected _ids [%1%] _set bar[%2%]_value|-[%3%]
+  --<|
+
+  --:donotpassgo|
+  --+Spell Token|Use the spell token to target and then cast this spell again.
+  --X|
+}}

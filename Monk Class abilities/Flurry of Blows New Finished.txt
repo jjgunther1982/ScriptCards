@@ -1,0 +1,403 @@
+!scriptcard {{ 
++++5ETools+++
+  --#reentrant|@{selected|character_id}
+--/|                >>>>> Formatting <<<<< 
+
+  --#emoteBackground|#transparent
+  --#titleCardBackground|#2bff00
+  --#titlefontsize|1.75em
+  --#titlefontlineheight|1.75em
+  --#titleFontColor|white
+  --#titlefontface|Shadows Into Light
+  --#subtitleFontSize|12px
+  --#subtitleFontFace|Verdana
+  --#evenRowBackground|#B6AB91
+  --#evenRowFontColor|#000000
+  --#oddRowBackground|#CEC7B6
+  --#oddRowFontColor|#000000
+  --#whisper|self,gm
+
+  --#title|Flurry of Blows
+  --#sourceToken|@{selected|token_id}
+  --#leftsub|Ki
+  --#rightsub|Melee Attack
+
+  -->GetAndCheckSlotInformation|
+
+  --=BlessCount|2
+  --#emoteText|@{selected|character_name} uses ki for a flurry of blows to his enemies!
+  --=DisplayCount|1
+  --:BlessLoop|
+  --?[$DisplayCount] -gt 1|NextTarget
+  --+Target|[rbutton]Click this button to select your first target.::DoIt;&#64;{target|token_id}[/rbutton] 
+  --X|
+  --:NextTarget|
+  --+Target|[rbutton]Click this button to select your next target.::DoIt;&#64;{target|token_id}[/rbutton] 
+  --X|
+  --:DoIt|
+  -->FireMissile|[$DisplayCount.Raw]
+  --:AfterMissile|
+  --=DisplayCount|[$DisplayCount] + 1
+  --?[$DisplayCount] -le [$BlessCount]|BlessLoop
+  -->DeductSpellSlot|
+
+  --X|
+
+  --:FireMissile|
+  --&ThisTarget|[&reentryval]
+  --#targettoken|[&reentryval]
+  --&DamageType|bludgeoning
+  --=DamageDice|@{selected|level} \ 5 * 2 + 4
+
+  --#whisper|self,gm
+  -->Clockwork|
+  --:NoAmmulet|
+
+  --+Choose an attack roll type for [*[&ThisTarget]:t-name].|[rbutton]Standard::knowYourRoll1;1d20[/rbutton][rbutton]Advantage::knowYourRoll1;2d20kh1[/rbutton][rbutton]Disadvantage::knowYourRoll1;2d20kl1[/rbutton]
+
+  --X| DONE
+
+  --:knowYourRoll1|
+  --=AttackRoll|[&reentryval] + @{dexterity_mod} [DEX] + @{pb} [PROF]
+
+  --:AfterAmulet|
+  -->CheckBless|
+  -->Bardic|
+  --:AfterBardic|
+
+  --#whisper|
+  -->RollResults|
+  --:DoneTalking|
+
+  --?[$AttackRoll.Base] -eq 20|Crit
+  --?[$AttackRoll.Base] -eq 1|Fumble
+
+  --=AttackRoll|[$AttackRoll] + [$BlessRoll] + [$BardicRoll]
+  --=NPCAC|[*[&ThisTarget]:npc_ac]
+  --?[$AttackRoll.Raw] -lt [$NPCAC]|Miss
+
+  --:Hit|
+  -->RollDamage|
+  --:AfterDamageNorm|
+  -->PlayEffects|none;none;none;none;none;Dick Twist
+  --+Hit!|Your attack hit for [$Damage] [%2%] damage!
+  -->ApplyDamageAlterbars|[&ThisTarget];1;-[$Damage]
+  -->OpenHand|
+  --:AfterOPHNorm|
+  -->StunningStrike|
+  -->AfterMissile|
+
+  --:Miss|
+  --+Miss|Your attack missed!
+  -->AfterMissile|
+
+  --:Fumble|
+  --=Fumblet|[T#Fumble-Table]
+  --+Fumble|The attack went really bad!
+  -->PlayEffects|none;none;none;none;none;Failure
+  --+Bad Stuff| [$Fumblet.tableEntryText]
+  --=FDamage|[&DamageAmount] + [*S:dexterity_mod] [DEX]
+  --=FCrit|[&DamageAmount] + [*S:dexterity_mod] [DEX] + [&DamageAmount] [CRIT]
+  --*Possible Damage| Normal Damage is [$FDamage] and Crit Damage is [$FCrit].
+  -->AfterMissile|
+
+  --:Crit|
+  -->RollDamage|crit
+  --:AfterDamageCrit|
+  -->PlayEffects|none;none;none;none;none;Karate
+  --+Critical Hit|You deal [$Damage] [&DamageType] damage CRITICAL HIT!
+  -->ApplyDamageAlterbars|[&ThisTarget];1;-[$Damage]
+  -->OpenHand|Crit
+  --:AfterOPHCrit|
+  -->StunningStrike|
+  -->AfterMissile|
+
+  --:RollDamage|
+  --&Magical|yes
+  -->Lib5E_Vulnerable|
+  --?[%1%] -eq crit|CritDamage
+  --=Damage|1d[$DamageDice] + [*S:dexterity_mod] [DEX][&vuln]
+  -->AfterDamageNorm|
+  --:CritDamage|
+  --=Damage|1d[$DamageDice] + [*S:dexterity_mod] [DEX] + 1d[$DamageDice] [CRIT][&vuln]
+  -->AfterDamageCrit|
+
+
+  --:GetAndCheckSlotInformation|
+  --=SlotsTotal|0
+  --=SlotsExpended|[*S:class_resource]
+  --?[$SlotsExpended.Raw] -eq [$SlotsTotal.Raw]|NoSlotsLeft
+  --=SlotsExpended|[$SlotsExpended] - 1
+  --<|
+
+  --:DeductSpellSlot|
+  --@setattr|_charid [*S:character_id] _class_resource|[$SlotsExpended] _silent
+  --+|Ki Left: [$SlotsExpended] 
+  --X|Full Stop
+
+  --:NoSlotsLeft|
+  --+|[*S:character_name] has no Ki available.
+  --#emoteText|[*S:character_name] tries to to use Ki, but they can't find their Kis.
+  --X|NoSlotsLeftStop
+
+  --:PlayEffects|Parameters are : sourcetoken; targettoken; source effect; target effect; line effect; sound effect
+  --@token-mod| _ids [%2%] _set statusmarkers|purple
+  --vtoken|[%1%] [%3%]
+  --vtoken|[%2%] [%4%]
+  --vbetweentokens|[%1%] [%2%] [%5%]
+  --@roll20AM|_audio,play,nomenu|[%6%]
+  --<|
+
+  --:ApplyDamageTokenmod|Parameters are tokenid;bar#;amount
+  --@token-mod|_ignore-selected _ids [%1%] _set bar[%2%]_value|[%3%]
+   --<|
+
+  --:ApplyDamageAlterbars|Parameters are tokenid;bar#;amount
+  --@alter|_target|[%1%] _bar|[%2%] _amount|[%3%]
+  --<|
+
+  --:BuildAndAskTargets|
+  --&TargetString|
+  --=targetCount|1
+  --:TargetLoop|
+  --&TargetString|+t;target[$targetCount.Raw];Missile [$targetCount.Raw] Target
+  --=targetCount|[$targetCount.Raw] + 1
+  --?[$targetCount.Raw] -le [%1%]|>AddSeparator
+  --?[$targetCount.Raw] -le [%1%]|TargetLoop
+  --iPlease click the button below to select the target.;Select [%1%] Targets|[&TargetString]
+  --/|
+  --<|
+
+  --:AddSeparator|
+  --&TargetString|+||
+  --<|
+
+
+  --:CheckBless|
+  --=Bless|@{selected|repeating_savemod_$0_global_save_active_flag}
+  --?[$Bless] -ne 0|Blessed
+  --=BlessRoll|0
+  --<|
+  --:Blessed|
+  --=BlessRoll|1d4
+  --<|
+
+  --:OpenHand|
+  --&ifCrit|[%1%]
+  --+You hit [*[&ThisTarget]:character_name].  Do you want to knock down, back, or remove its reaction?|[rbutton]Down::OpenFist;Down[/rbutton][rbutton]Back::OpenFist;Back[/rbutton][rbutton]Remove Reaction::OpenFist;No Reaction[/rbutton]
+  --X|
+  --:OpenFist|
+  --&maybe|[&reentryval]
+  --?"[&maybe]" -inc "Down"|Down
+  --?"[&maybe]" -inc "Back"|Back
+  --?"[&maybe]" -inc "Reaction"|noReaction
+  --:AfterOpen|
+  --?"[&ifCrit] -inc "crit"|AfterOPHCrit
+  -->AfterOPHNorm|
+
+  --:Back|
+  --#whisper|
+  --=DC|8 + [*S:wisdom_mod] + [*S:pb]
+  --=savingThrow|1d20 + [*[&ThisTarget]:strength_save_bonus] [STR]
+  --+|[*[&ThisTarget]:character_name] made a [$savingThrow] Strength saving throw against [$DC] DC.
+  --?[$savingThrow] -ge [$DC]|missabilityS
+  --i[*[&ThisTarget]:character_name] failed his saving throw, how far back do you want to knock them;Click this button to choose how far to knock them back|q;howFar;Choose between 5, 10, and 15 ft.|5|10|15|
+  --=PushBack|[&howFar] \ 5
+  --&STid|@{selected|token_id}
+  --&TTid|[*[&ThisTarget]:t-id]
+  -->PUSH|
+  --:AfterPush|
+  -->AfterOpen|
+  --:missabilityS|
+  --+Miss|Your open hand had to affect.
+  -->AfterOpen|
+
+
+  --:Down|
+  --#whisper|
+  --=DC|8 + [*S:wisdom_mod] + [*S:pb]
+  --=savingThrow|1d20 + [*[&ThisTarget]:dexterity_save_bonus] [DEX]
+  --?"[*[&ThisTarget]:npc_condition_immunities]" -inc "prone"|immunetoprone
+  --+|[*[&ThisTarget]:character_name] made a [$savingThrow] Dexterity saving throw against [$DC] DC.
+  --?[$savingThrow] -ge [$DC]|missabilityD
+  --+|[*[&ThisTarget]:character_name] has been knocked down prone.
+  --@token-mod| _ids [*[&ThisTarget]:t-id] _set statusmarkers|back-pain
+  -->AfterOpen|
+  --:missabilityD|
+  --+Miss|Your open hand had to affect.
+  -->AfterOpen|
+  --:immunetoprone|
+  --+Immune|[*[&ThisTarget]:character_name] can't be knocked down.
+  -->AfterOpen|
+
+  --:noReaction|
+  --#whisper|
+  --+|[*[&ThisTarget]:character_name] has no reaction until the start of @{selected|token_name}'s next turn.
+  -->AfterOpen|
+
+  --:Bardic|
+  --=BardicRoll|0
+  --?@{selected|Bard} -eq 1|BardOn
+  -->AfterBardic|
+  --:BardOn|
+  --?[$Bless] -ne 0|BardBlessed
+  --+You rolled a [$AttackRoll.Base] for attack for a total of [$AttackRoll].  Do you want to use Bardic Inspiration?|[rbutton]Yes::BardYes[/rbutton][rbutton]No::AfterBardic[/rbutton]
+  --X| DONE
+  --:BardBlessed|
+  --+You rolled a [$AttackRoll.Base] for attack for a total of [$AttackRoll].  You rolled [$BlessRoll] for blessed. Do you want to use Bardic Inspiration?|[rbutton]Yes::BardYes[/rbutton][rbutton]No::AfterBardic[/rbutton]
+  --X| DONE
+  --:BardYes|
+  --=BardLess20|[*S:BobBardLevel] \ 5 * 2 + 6
+  --?[*S:BobBardLevel] -lt 20|>BardicRoll;[$BardLess20]
+  --?[*S:BobBardLevel] -eq 20|>BardicRoll;12
+  -->AfterBardic|
+  --:BardicRoll|
+  --=BardDie|[%1%]
+  --=BardicRoll|1d[$BardDie]
+  --+|Roll [$BardicRoll]
+  --@setattr|_charid @{selected|character_id} _Bard|0 _silent
+  --<|
+
+  --:RollResults|
+  --&BardicRollResult|
+  --&BlessRollResult|
+  --?[$BardicRoll] -eq 0|NoBardResult
+  --&BardicRollResult|You rolled [$BardicRoll] from bardic inspiration.
+  --:NoBardResult|
+  --?[$BlessRoll] -eq 0|NoBlessTalk
+  --&BlessRollResult|You rolled [$BlessRoll] from being blessed.
+  --:NoBlessTalk|
+  --+Attack Roll|You rolled a [$AttackRoll] to hit.[&BardicRollResult][&BlessRollResult]
+  --<|
+
+
+  --:PUSH|
+    -->MOVE_TOKEN|[&STid];[&TTid];[$PushBack]
+    --+|[*[&STid]:t-name] has pushed [*[&TTid]:t-name] back [&howFar] feet!
+
+--:MOVE_TOKEN|STokenid, TTokenId, Units
+  --&TId1|[%1%]
+  --&TId2|[%2%]
+  --&Units|[%3%]
+
+  --/| Angle function returns a string variable (&) with lots of decimal points.
+  --~A|math;angle;[&TId1];[&TId2]
+
+  --/| I've found that TokenMod chokes on a movement angle with lots of decimal points, so rounding is needed
+  --/|$Ar will now contain a rounded integer version of &A
+  --~Ar|math;round;[&A]
+
+
+  --/|&Angle will end up being one of the common directions which may work better for grids
+  --?[$Ar] -gt 337.5 -or [$Ar] -le 22.5|&Angle;0
+  --?[$Ar] -gt 22.5 -and [$Ar] -le 67.5|&Angle;45
+  --?[$Ar] -gt 67.5 -and [$Ar] -le 112.5|&Angle;90
+  --?[$Ar] -gt 112.5 -and [$Ar] -le 157.5|&Angle;135
+  --?[$Ar] -gt 157.5 -and [$Ar] -le 202.5|&Angle;180
+  --?[$Ar] -gt 202.5 -and [$Ar] -le 247.5|&Angle;225
+  --?[$Ar] -gt 247.5 -and [$Ar] -le 292.5|&Angle;270
+  --?[$Ar] -gt 292.5 -and [$Ar] -le 337.5|&Angle;315
+
+  --/| Added for dealing with a SC 1.39a bug (returns negative angles beteen 270 and 360)
+  --?[$Ar] -gt -90 -and [$Ar] -le -67.5|&Angle;270
+  --?[$Ar] -gt -67.5 -and [$Ar] -le -22.5|&Angle;315
+  --?[$Ar] -gt -22.5 -and [$Ar] -le 0|&Angle;0
+
+  --&UnitsFactor|1
+  --?[&Angle] -eq 45|&UnitsFactor;1.4142
+  --?[&Angle] -eq 135|&UnitsFactor;1.4142
+  --?[&Angle] -eq 225|&UnitsFactor;1.4142
+  --?[&Angle] -eq 315|&UnitsFactor;1.4142
+
+  --=U|[&Units] * [&UnitsFactor] 
+
+  --*Angles|[&Angle] ([&A]) ([$Ar]) 
+  --/| Time to call the magic TokenMod function to make the target token move across the screen
+  --@token-mod|_move =[&Angle]|[$U.Raw]g _ids [&TId2] _ignore-selected
+-->AfterPush|Return
+
+  --:Port|
+  --#whisper|self,GM
+  --+Are you using Portant?.|[rbutton]No::AfterPort[/rbutton][rbutton]Portant 1::knowYourRoll2;1[/rbutton][rbutton]Portant 2::knowYourRoll2;2[/rbutton]
+  --X| DONE
+  --:knowYourRoll2|
+  --=Port|[&reentryval]
+  --?[$Port] -eq 1|Port1
+  --=AttackRoll| [*-MV-n2aBFpJndH0fCQAM:Port2] + [&DamageMod] + @{selected|pb} [PROF]
+  --=PortantRoll|[*-MV-n2aBFpJndH0fCQAM:Port2]
+  --=Port2|0
+  --@setattr|_charid @{Amorette Muckbuckle|character_id} _Port2|[$Port2] _silent
+  --?[$PortantRoll] -eq 20|Crit
+  -->AfterPort|
+  --:Port1|
+  --=AttackRoll| [*-MV-n2aBFpJndH0fCQAM:Port1] + [&DamageMod] + @{selected|pb} [PROF]
+  --=Port1|0
+  --=PortantRoll|[*-MV-n2aBFpJndH0fCQAM:Port1]
+  --@setattr|_charid @{Amorette Muckbuckle|character_id} _Port1|[$Port1] _silent
+  --?[$PortantRoll] -eq 20|Crit
+  -->AfterPort|
+
+  --:StunningStrike|
+  --?[$SlotsExpended] -eq 0|NoStrike
+  --?"[&AttackType]" -inc "range"|NoStrike
+  --+Stunning Strike|Do you want to spend a Ki Point to attempt to stun your target?
+  --+|[rbutton]yes::dothestrike[/rbutton][rbutton]no::NoStrike[/rbutton]
+  --X|
+  --:dothestrike|
+  --#whisper|self,GM
+  --+Saving Throw|Ask the DM if the target is making a saving throw at advantage, disadvantage, or standard.
+  --+|[rbutton]Standard::StrikeSave;1d20[/rbutton][rbutton]Advantage::StrikeSave;2d20kh1[/rbutton][rbutton]Disadvantage::StrikeSave;2d20kl1[/rbutton]
+  --X|
+  --:StrikeSave|
+  --#whisper|
+  --=StriveSave|[&reentryval] + [*[&ThisTarget]:constitution_save_bonus] [CON]
+  --=StrikeDC|8 + [*S:pb] [PB] + [*S:wisdom_mod] [WIS]
+  --?[$StriveSave.Total] -ge [$StrikeDC.Total]|SaveStun
+  --?"[*[&ThisTarget]:npc_condition_immunities]" -inc "stun"|StunImmune
+  --+Stunned|[*[&ThisTarget]:t-name] rolled a [$StriveSave], and it needed [$StrikeDC].  [*[&ThisTarget]:t-name] is stunned.
+  --=SlotsExpended|[$SlotsExpended] - 1
+  --@token-mod| _ids [*[&ThisTarget]:t-id] _set statusmarkers|fist
+  --<|
+  --:SaveStun|
+  --+Saved|[*[&ThisTarget]:t-name] rolled a [$StriveSave], and it needed [$StrikeDC].  [*S:t-name] did not stun [*[&ThisTarget]:t-name].
+  --=SlotsExpended|[$SlotsExpended] - 1
+  --@setattr|_charid @{selected|character_id} _class_resource|[$Ki] _silent
+  --<|
+  --:StunImmune|
+  --+Immune|[*[&ThisTarget]:t-name] rolled a [$StriveSave], and it needed [$StrikeDC].  [*[&ThisTarget]:t-name] is immune to stun.
+  --=SlotsExpended|[$SlotsExpended] - 1
+  --@setattr|_charid @{selected|character_id} _class_resource|[$Ki] _silent
+  --:NoStrike|
+  --<|
+
+
+--:GetAndCheckAmmoInformation|character_id;resourceName;Ammoname;Ammo;&Ammo
+--?"[%2%]" -eq "[*[%1%]:class_resource_name]"|_Lib5E_IsResourceClass
+--?"[%2%]" -eq "[*[%1%]:other_resource_name]"|_Lib5E_IsResourceOther
+--Rfirst|[%1%];repeating_resource
+--:_Lib5E_ResourceLoop|
+--?"[*R:resource_left_name]" -eq "[%2%]"|_Lib5E_IsResourceLeft
+--?"[*R:resource_right_name]" -eq "[%2%]"|_Lib5E_IsResourceRight
+--Rnext|
+--?"[*R:resource_left_name]" -ne "NoRepeatingAttributeLoaded"|_Lib5E_ResourceLoop
+--&[%3%]|NotFound --&[%4%]|NotFound --$[%4%]|0 
+--<|
+--:_Lib5E_IsResourceClass| --*IsClass| --&[%3%]|class_resource_name --&[%4%]|class_resource --=[%4%]|[*[%1%]:class_resource] --<|
+--:_Lib5E_IsResourceOther| --*IsOther!| --&[%3%]|other_resource --&[%4%]|other_resource --=[%4%]|[*[%1%]:other_resource] --<|
+--:_Lib5E_IsResourceLeft| --*IsLeft| --&[%3%]|[*R>resource_left_name] --&[%4%]|[*R>resource_left] --=[%4%]|[*R:resource_left] --<|
+--:_Lib5E_IsResourceRight| --*IsRight| --&[%3%]|[*R>resource_right_name] --&[%4%]|[*R>resource_right] --=[%4%]|[*R:resource_right] --<|
+--<|
+
+  --:Clockwork|
+  -->Lib5E_GetAndCheckAmmoInformation|[*S:character_id];Clockwork Amulet [l];Amuletname;Amulet
+  --+|[$Amulet]
+  --?[$Amulet] -eq 0|NoAmmulet
+  --+Do you want to use the clockwork Amulet to roll a 10 against [*[&ThisTarget]:t-name]?|[rbutton]Yes::YesAmulet[/rbutton][rbutton]No::NoAmmulet[/rbutton]
+  --X|
+  --:YesAmulet|
+  --=AttackRoll|10 + [&DamageMod][&PB][&MagWeapHitBonus]
+  --@setattr|_charid [*S:character_id] _[&Amulet]|0 _silent
+  --+Clockwork Amulet|[*S:t-name] use the Clockwork Amulet to roll a 10.
+  --^AfterAmulet|
+
+}}

@@ -1,0 +1,50 @@
+!scriptcard {{  
++++5ETools+++
+  --#reentrant|@{selected|character_id} 
+--/|                >>>>> Formatting <<<<<
+  --#emoteBackground|#transparent
+  --#titleCardBackground|#b600f2
+  --#titlefontsize|1.75em
+  --#titlefontlineheight|1.75em
+  --#titleFontColor|white
+  --#titlefontface|Shadows Into Light
+  --#subtitleFontSize|12px
+  --#subtitleFontFace|Verdana
+  --#evenRowBackground|#B6AB91
+  --#evenRowFontColor|#000000
+  --#oddRowBackground|#CEC7B6
+  --#oddRowFontColor|#000000
+  --#whisper|self,GM
+  --#targetToken|@{target|token_id}
+
+  --#title|Empowered Healing
+  --#sourceToken|@{selected|token_id}
+  --#emoteText|[*S:character_name] tries to get [*T:t-name] a little more healing.
+  --#leftsub|Class Ability Range 5 ft
+  --#rightsub|1 Sorcery Point
+  --&ResourceUsed|Sorcery Points
+  -->Lib5E_FindResource|[*S:character_id];[&ResourceUsed];Ammoname;Ammo
+  -->Lib5E_AmmoAvailable|Ammo
+
+
+  --+Die Level|What level die did they roll?
+  --+|[rbutton]4::knowYourRoll1;4[/rbutton][rbutton]6::knowYourRoll1;6[/rbutton][rbutton]8::knowYourRoll1;8[/rbutton][rbutton]10::knowYourRoll1;10[/rbutton][rbutton]12::knowYourRoll1;12[/rbutton]
+  --X|
+  --:knowYourRoll|
+  --=DieLevel|[&reentryval]
+  --+How Many|How many dice were there?
+  --=Max|10
+  --=Level|0
+  --:Loop|
+  --=Level|[$Level] + 1
+  --+|[rbutton][$Level]::HowMany1;[$Level][/rbutton]
+  --?[$Level] -lt [$Max]|Loop
+  --X|
+  --:HowMany1|
+  --#whisper|
+  --=ReRoll|[&reentryval]d[$DieLevel]
+  --+New Dice|New Healing Dice Roll for [*T:t-name] is [$ReRoll]
+  -->Lib5E_AmmoSpent|[*S:character_id];Ammo
+  --X|
+}}
+  

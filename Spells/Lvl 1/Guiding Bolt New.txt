@@ -1,0 +1,149 @@
+!scriptcards {{ 
++++5ETools+++
+  --#sourceToken|@{selected|token_id}
+  --#targetToken|@{target|token_id}
+  --#reentrant|@{selected|character_id} 
+
+--/|                >>>>> Formatting <<<<<
+  --#emoteBackground|#transparent
+  --#titleCardBackground|#b600f2
+  --#titlefontsize|1.75em
+  --#titlefontlineheight|1.75em
+  --#titleFontColor|white
+  --#titlefontface|Shadows Into Light
+  --#subtitleFontSize|12px
+  --#subtitleFontFace|Verdana
+  --#evenRowBackground|#B6AB91
+  --#evenRowFontColor|#000000
+  --#oddRowBackground|#CEC7B6
+  --#oddRowFontColor|#000000
+  --#whisper|self,gm
+
+  --#title|Guiding Bolt
+  --#rightsub|Ranged Spell
+  --#leftsub|120 Feet
+
+  --~HowFarAway|distance;@{selected|token_id};@{target|token_id}
+  --=HowFar|[$HowFarAway] * 5
+  --?[$HowFar] -gt 120|tooFar
+
+
+
+  -->Lib5E_GetAndCheckSlotInformation|1
+
+  --+Choose a ranged attack roll type.|[rbutton]Standard::knowYourRoll1;1d20[/rbutton][rbutton]Advantage::knowYourRoll1;2d20kh1[/rbutton][rbutton]Disadvantage::knowYourRoll1;2d20kl1[/rbutton]
+
+  --X| DONE
+
+  --:knowYourRoll1|
+
+  --:Lib5E_CheckBless|
+  --=AttackRoll|[&reentryval] + @{spell_attack_bonus} [Spell Attack Bonus][&BlessRoll]
+
+
+  -->Lib5E_Bardic|
+
+
+  --+|[img]https://media1.tenor.com/images/99bbe52a656f7fb8334f432bc6902f5c/tenor.gif?itemid=19383439[/img]
+  --#emoteText|[*S:character_name] attempts to hit [*T:character_name] with a guiding bolt.
+  --#whisper|
+  -->Lib5E_RollResults|
+
+
+  --?[$AttackRoll.Base] -eq 20|Crit
+  --?[$AttackRoll.Base] -eq 1|Fumble
+  --=AttackRoll|[$AttackRoll] + [$BardicRoll]
+  --:TryAgain|
+  --?[$AttackRoll.Total] -ge @{target|npc_ac}|Hit
+
+  --:Miss|
+  --+Miss|Your attack missed!
+  -->GodsBlessing|
+  --:AfterGod|
+  -->Lib5E_DeductSpellSlot|[*S:character_id];[$SlotLevel]
+  --X|
+
+
+  --:Hit|
+  --&DamageType|radiant
+  --:Lib5E_Vulnerable|
+  -->RollDamage|
+  --+Hit!|Your attack hit for [$Damage] Radiant damage!
+  --@roll20AM|_audio,play,nomenu|Radiant Spell
+  --@alter|_target|@{target|token_id} _bar|1 _amount|-[$Damage]
+  --@token-mod| _ids @{target|token_id} _set statusmarkers|broken-shield
+  -->Lib5E_DeductSpellSlot|[*S:character_id];[$SlotLevel]
+  --X|
+
+
+  --:Fumble|
+  --=Fumblet|[T#Fumble-Table]
+  --+Fumble|The attack went really bad!
+  --+Bad Stuff| [$Fumblet.tableEntryText]
+  -->RollDamage|
+  --=FDamage|[$Damage]
+  -->RollDamage|crit
+  --=FCrit|[$Damage]
+  --*Possible Damage| Normal Damage is [$FDamage] and Crit Damage is [$FCrit].
+  -->Lib5E_DeductSpellSlot|[*S:character_id];[$SlotLevel]
+  --X|
+
+  --:Crit|
+  --&DamageType|radiant
+  --:Lib5E_Vulnerable|
+  -->RollDamage|crit
+  --@roll20AM|_audio,play,nomenu|Radiant Spell
+  --+Critical Hit|You deal [$Damage] radiant damage CRITICAL HIT!
+  --@alter|_target|@{target|token_id} _bar|1 _amount|-[$Damage]
+  --@token-mod| _ids @{target|token_id} _set statusmarkers|broken-shield
+  -->Lib5E_DeductSpellSlot|[*S:character_id];[$SlotLevel]
+  --X|
+
+
+
+  --:RollDamage|
+  --?[%1%] -eq crit|CritDamage
+  --=HowManyDice| 3 + [$SlotLevel]
+  --=Damage| [$HowManyDice]d6[&vulnd]
+  --<|
+  --:CritDamage|
+  --=HowManyDice| 3 + [$SlotLevel]
+  --=Damage| [$HowManyDice]d6 + [$HowManyDice]d6 [CRIT][&vulnd]
+  --<|
+
+  --:PlayEffects|Parameters are : sourcetoken; targettoken; source effect; target effect; line effect; sound effect
+  --vtoken|[%1%] [%3%]
+  --vtoken|[%2%] [%4%]
+  --vbetweentokens|[%1%] [%2%] [%5%]
+  --@roll20AM|_audio,play,nomenu|[%6%]
+  --<|
+
+
+  --:CheckBless|
+  --=Bless|@{selected|repeating_savemod_$0_global_save_active_flag}
+  --?[$Bless] -ne 0|Blessed
+  --=BlessRoll|0
+  --<|
+  --:Blessed|
+  --=BlessRoll|1d4
+  --<|
+
+  --:tooFar|
+  --+|The target is too far away. 
+  --X|
+
+  --:GodsBlessing|
+  --?[*S:class_resource] -eq 0|AfterGod
+  --?[$Loop] -eq 1|AfterGod
+  --=Loop|1
+  --+Do you want to use Favor by the Gods?|[rbutton]Yes::FavorYes[/rbutton][rbutton]No::AfterGod[/rbutton]
+  --X|
+  --:FavorYes|
+  --=FavoredRoll|2d4
+  --+Help From the Gods|You Rolled [$FavoredRoll]
+  --=AttackRoll|[$AttackRoll] + [$FavoredRoll]
+  --+Total|Your total is now [$AttackRoll].
+  --@setattr|_charid [*S:character_id] _class_resource|0 _silent
+  -->TryAgain|
+
+}}

@@ -1,0 +1,103 @@
+!scriptcards{{
+  --#reentrant|@{selected|character_id} 
+  --#emoteBackground|#transparent
+  --#titleCardBackground|#ff8000
+  --#titlefontsize|1.75em
+  --#titlefontlineheight|1.75em
+  --#titleFontColor|white
+  --#titlefontface|Shadows Into Light
+  --#subtitleFontSize|12px
+  --#subtitleFontFace|Verdana
+  --#evenRowBackground|#B6AB91
+  --#evenRowFontColor|#000000
+  --#oddRowBackground|#CEC7B6
+  --#oddRowFontColor|#000000
+  --#whisper|self,gm
+
+  --#title|Cordon of Arrows
+  --#rightsub|Trap Spell
+  --#leftsub|5 Ft.
+  --#sourceToken|@{selected|token_id}
+
+  -->GetAndCheckSlotInformation|
+  -->GetAndCheckAmmoInformation|[*S:character_id];Arrows;Arrows;Arrows
+  -->GetAndCheckAmmoInformation|[*S:character_id];Bolts;Bolts;Bolts
+  
+  -->WhattoUse|
+  --:UsingThis|
+  --#whisper|
+  --#emoteText|[*S:character_name] plants 4 [&Used] into the ground and sets a magical trap.
+  --+When activated|If a creature not designated by [*S:character_name] comes within 30 ft of the trap, the target must make a 14 DC saving throw or take 1d6 magical piercing damage.
+  --+Spell Toke|Use the Cordon of Arrows spell token to determine where the traps are.
+  -->AmmoSpent|
+  -->DeductSpellSlot|
+
+
+
+  --:GetAndCheckSlotInformation|
+  --+What Spell Slot Level?|Click a button bellow to select your spell slot level.
+  --+|[rbutton]2::knowYourLVL1;2[/rbutton][rbutton]3::knowYourLVL1;3[/rbutton][rbutton]4::knowYourLVL1;4[/rbutton][rbutton]5::knowYourLVL1;5[/rbutton][rbutton]6::knowYourLVL1;6[/rbutton][rbutton]7::knowYourLVL1;7[/rbutton][rbutton]8::knowYourLVL1;8[/rbutton][rbutton]9::knowYourLVL1;9[/rbutton]
+  --X|
+  --:knowYourLVL1|
+  --=SlotLevel|[&reentryval]
+  --=SlotsTotal|0
+  --=SlotsExpended|[*S:lvl[$SlotLevel]_slots_expended]
+  --?[$SlotsExpended.Raw] -eq [$SlotsTotal.Raw]|NoSlotsLeft
+  --<|
+
+
+  --:DeductSpellSlot|
+  --=SlotsLeft|[$SlotsExpended] - 1
+  --@setattr|_charid [*S:character_id] _lvl[$SlotLevel]_slots_expended|[$SlotsLeft] _silent
+  --+|Level [$SlotLevel] Slots Left: [$SlotsLeft] 
+  --X|Full Stop
+
+  --:NoSlotsLeft|
+  --+|[*S:character_name] has no level [$SlotLevel.Total] spell slots available.
+  --#emoteText|[*S:character_name] tries to cast a spell but farts in instead.
+  -->PlayEffects|@{selected|token_id};none;bomb-acid;none;none;Fart
+  --X|NoSlotsLeftStop
+
+--/This is going to find the ammo used on the character sheet and determine how much is available.
+--:GetAndCheckAmmoInformation|character_id;resourceName;Ammoname;Ammo
+--?"[%2%]" -eq "[*[%1%]:class_resource_name]"|_Lib5E_IsResourceClass
+--?"[%2%]" -eq "[*[%1%]:other_resource_name]"|_Lib5E_IsResourceOther
+--Rfirst|[%1%];repeating_resource
+--:_Lib5E_ResourceLoop|
+--?"[*R:resource_left_name]" -eq "[%2%]"|_Lib5E_IsResourceLeft
+--?"[*R:resource_right_name]" -eq "[%2%]"|_Lib5E_IsResourceRight
+--Rnext|
+--?"[*R:resource_left_name]" -ne "NoRepeatingAttributeLoaded"|_Lib5E_ResourceLoop
+--&[%3%]|NotFound --&[%4%]|NotFound --=[%4%]|0 
+--<|
+--:_Lib5E_IsResourceClass| --&[%3%]|class_resource_name --&[%4%]|class_resource --=[%4%]|[*[%1%]:class_resource] --<|
+--:_Lib5E_IsResourceOther| --&[%3%]|other_resource --&[%4%]|other_resource --=[%4%]|[*[%1%]:other_resource] --<|
+--:_Lib5E_IsResourceLeft| --&[%3%]|[*R>resource_left_name] --&[%4%]|[*R>resource_left] --=[%4%]|[*R:resource_left] --<|
+--:_Lib5E_IsResourceRight| --&[%3%]|[*R>resource_right_name] --&[%4%]|[*R>resource_right] --=[%4%]|[*R:resource_right] --<|
+--<|
+
+  --:WhattoUse|
+  --=Total|[$Bolts] + [$Arrows]
+  --?[$Total] -lt 4|NotEnoughAmmo
+  --?[$Bolts] -lt 4|>UseThis;Arrows
+  --?[$Arrows] -lt 4|>UseThis;Bolts
+  --+Ammo|Do you want to use Bolts or Arrows?
+  --+[rbutton]Bolts::UseThis;Bolts[/rbutton][rbutton]Arrows::UseThis;Arrows[/rbutton]
+  --X|
+  --:UseThis|
+  --&Used|[%1%]
+  -->UsingThis|
+
+  --:NotEnoughAmmo|
+  --+Not Enough Ammo|You don't have enough ammo to cast this.
+  --X|
+
+  --:AmmoSpent|
+  --=[&Used]|[$[&Used]] - 4
+  --@setattr|_charid [*S:character_id] _[&[&Used]]|[$[&Used]] _silent
+  --&ResourceUsed|+_name
+  --&ResourceTitle|[*S:[&ResourceUsed]]
+  --+|[&Used] Left: [$[&Used]] 
+  --<|
+  
+}}

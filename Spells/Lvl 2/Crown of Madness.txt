@@ -1,0 +1,67 @@
+!scriptcards {{ 
++++5ETools+++
+  --#reentrant|@{selected|character_id}
+--/|                >>>>> Formatting <<<<<
+  --#emoteBackground|#transparent
+  --#titleCardBackground|#b600f2
+  --#titlefontsize|1.75em
+  --#titlefontlineheight|1.75em
+  --#titleFontColor|white
+  --#titlefontface|Shadows Into Light
+  --#subtitleFontSize|12px
+  --#subtitleFontFace|Verdana
+  --#evenRowBackground|#B6AB91
+  --#evenRowFontColor|#000000
+  --#oddRowBackground|#CEC7B6
+  --#oddRowFontColor|#000000
+  --#whisper|self,GM
+
+  --#title|Crown of Madness
+  --#leftsub|Ranged Spell Debuff
+  --#rightsub|120 ft Range
+  --#sourceToken|@{selected|token_id}
+  --#targetToken|@{target|token_id}
+
+
+
+  -->Lib5E_Warlock_GetAndCheckSlotInformation|
+
+  --~HowFarAway|distance;@{selected|token_id};@{target|token_id}
+  --=HowFar|[$HowFarAway] * 5
+  --?[$HowFar] -gt 120|tooFar
+
+  --#emoteText|[*S:character_name] attempts to charm @{target|token_name}.
+
+  --+Saving Throw|Ask the DM if the saving throw is standard, advantage, or disadvantage for @{target|token_name}.
+  --+|[rbutton]Standard::knowYourRoll1;1d20[/rbutton][rbutton]Advantage::knowYourRoll1;2d20kh1[/rbutton][rbutton]Disadvantage::knowYourRoll1;2d20kl1[/rbutton]
+  --X|
+  --:knowYourRoll1|
+  --#whisper|
+  --=SavingThrow|[&reentryval] + [*T:wisdom_save_bonus]
+  --+|Wis Saving Throw [$SavingThrow] vs @{selected|spell_save_dc}
+  --?"[*T:npc_condition_immunities]" -inc "charmed"|immune
+  --?[$SavingThrow] -ge @{selected|spell_save_dc}|Saved
+  --+Charmed|@{target|token_name} failed their saving throw.  They will attack who you desire, other than itself of course.
+  --@token-mod| _ids [*S:t-id] _set statusmarkers|Aura
+  --+|@{target|token_name} will attack before moving whoever [*S:character_name] would like.  They can attempt a saving throw again at the end of their turn.  They will attack normally if they are not commanded to attack anyone or if no one is in range at the start of their turn.
+  --@token-mod| _ids @{target|token_id} _set statusmarkers|broken-heart
+  --@act| -1| 10| _Crown of Madness [*T:t-name]
+  -->Lib5E_DeductSpellSlot|[*S:character_id];[$SlotLevel]
+  --X|
+  --:Saved|
+  --+Saved|@{target|token_name} passed their saving throw.  They will not do as you command.
+  -->Lib5E_DeductSpellSlot|[*S:character_id];[$SlotLevel]
+  --X|
+
+  --:tooFar|
+  --#whisper|
+  --+|The target is too far away. 
+  -->Lib5E_DeductSpellSlot|[*S:character_id];[$SlotLevel]
+  --X|
+
+  --:immune|
+  --+Immune|[*T:token_name] can't be charmed.
+  -->Lib5E_DeductSpellSlot|[*S:character_id];[$SlotLevel]
+
+
+}}

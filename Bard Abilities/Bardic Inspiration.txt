@@ -1,0 +1,52 @@
+!scriptcards{{
++++5ETools+++
+  --#reentrant|Spell @{selected|character_id}
+--/|                >>>>> Formatting <<<<<
+  --#emoteBackground|#transparent
+  --#titleCardBackground|#ed0202
+  --#titlefontsize|1.75em
+  --#titlefontlineheight|1.75em
+  --#titleFontColor|white
+  --#titlefontface|Shadows Into Light
+  --#subtitleFontSize|12px
+  --#subtitleFontFace|Verdana
+  --#evenRowBackground|#B6AB91
+  --#evenRowFontColor|#000000
+  --#oddRowBackground|#CEC7B6
+  --#oddRowFontColor|#000000
+
+  --#Title|Bardic Inspiration
+  --#leftsub|Class Ability
+  --#rightsub|Bonus Action 60 Feet
+  --#sourceToken|@{selected|token_id}
+  --#targetToken|@{target|token_id}
+
+  --&ResourceUsed|Bardic Inspiration
+  --&ModChanged|BardicInspiration
+
+  -->Lib5E_FindResource|[*S:character_id];[&ResourceUsed];Ammoname;Ammo
+  -->Lib5E_AmmoAvailable|Ammo
+
+  --~HowFarAway|distance;@{selected|token_id};@{target|token_id}
+  --=HowFar|[$HowFarAway] * 5
+  --?[$HowFar] -gt 60|tooFar
+
+  --#emoteText|@{selected|token_name} gives @{target|token_name} Bardic Inspiration with some tasty jams.
+  --@setattr|_charid @{target|character_id} _Bard|1 _silent
+  -->Lib5E_Global_mod_finder|@{target|character_id};tohit;[&ResourceUsed];Attack
+  --@setattr|_charid @{target|character_id} _repeating_[&ModType]mod_$[$ModLoop]_global_[&ModType2]_active_flag|1 _silent
+  -->Lib5E_Global_mod_finder|@{target|character_id};save;[&ResourceUsed];Save
+  --@setattr|_charid @{target|character_id} _repeating_[&ModType]mod_$[$ModLoop]_global_[&ModType2]_active_flag|1 _silent
+  -->Lib5E_Global_mod_finder|@{target|character_id};skill;[&ResourceUsed];Skill
+  --@setattr|_charid @{target|character_id} _repeating_[&ModType]mod_$[$ModLoop]_global_[&ModType2]_active_flag|1 _silent
+  -->Lib5E_PlayEffects|@{selected|token_id};@{target|token_id}|none|none|none|Bardic Inspiration
+  -->Lib5E_AmmoSpent|[*S:character_id];Ammo
+  --X|
+
+
+
+  --:tooFar|
+  --+|The target is too far away. 
+  --X|
+
+}}

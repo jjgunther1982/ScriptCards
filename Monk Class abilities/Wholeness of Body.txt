@@ -1,0 +1,39 @@
+!scriptcards {{ 
+
+--/|                >>>>> Formatting <<<<< 
++++5ETools+++
+  --#emoteBackground|#transparent
+  --#titleCardBackground|#2bff00
+  --#titlefontsize|1.75em
+  --#titlefontlineheight|1.75em
+  --#titleFontColor|white
+  --#titlefontface|Shadows Into Light
+  --#subtitleFontSize|12px
+  --#subtitleFontFace|Verdana
+  --#evenRowBackground|#B6AB91
+  --#evenRowFontColor|#000000
+  --#oddRowBackground|#CEC7B6
+  --#oddRowFontColor|#000000
+
+  --:Patient Defense|
+  --#title|Wholeness of Body
+  --#sourceToken|@{selected|token_id}
+  --#titleCardBackground|#006400
+
+
+  -->Lib5E_FindResource|[*S:character_id];Wholeness of Body [l];BodyName;Body
+  -->Lib5E_AmmoAvailable|Body
+
+  --#emoteText|[*S:character_name] attempts to make his body whole.
+  --=Healing|[*S:Level] [Monk Level] * 3
+  -->Lib5E_PlayEffects|[*S:t-id];none;burn-holy;none;none;Cure Wounds
+  --=healthmissing|[*S:t-bar1_max] - [*S:t-bar1_value]
+  --?[$Healing] -gt [$healthmissing]|=Healing;[$healthmissing]
+  --!t:[*S:t-id]|bar1_value:+=[$Healing]
+  --+|[*S:character_name] is healed for [$Healing].
+
+  -->Lib5E_AmmoSpent|[*S:character_id];Body;Wholeness of Body [l]
+
+  --X|
+
+}}

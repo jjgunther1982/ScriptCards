@@ -1,0 +1,15 @@
+!scriptcards {{ 
+
+  --:GD|
+  --#title|Guidance
+  --#sourceToken| @{selected|token_id}
+  --#targetToken|@{target|token_id}
+  --#leftsub|Duration 1 minute/Concentration
+  --#rightsub|Range Touch
+  --?@{target|token_id} -eq @{selected|token_id}|myself
+  --#emoteText|@{selected|token_name} touchs and winks at @{target|token_name}. 
+ --+|Once before the spell ends, @{target|token_name} can roll a d4 and add that number rolled to one ability check of its choice. @{target|token_name} can roll the die before or after making the ability check. The spell then ends.
+  --@act| -1| 10| _Guidance
+  --X|
+
+}}

@@ -1,0 +1,67 @@
+!scriptcards {{ 
++++5ETools+++
+  --#reentrant|Spell @{selected|character_id} 
+--/|                >>>>> Formatting <<<<<
+  --#emoteBackground|#transparent
+  --#titleCardBackground|#b600f2
+  --#titlefontsize|1.75em
+  --#titlefontlineheight|1.75em
+  --#titleFontColor|white
+  --#titlefontface|Shadows Into Light
+  --#subtitleFontSize|12px
+  --#subtitleFontFace|Verdana
+  --#evenRowBackground|#B6AB91
+  --#evenRowFontColor|#000000
+  --#oddRowBackground|#CEC7B6
+  --#oddRowFontColor|#000000
+  --#whisper|self,GM
+
+  --#title|Suggestion
+  --#leftsub|Ranged Spell Debuff
+  --#rightsub|30 ft Range
+  --#sourceToken|@{selected|token_id}
+  --#targetToken|@{target|token_id}
+  --#titleCardBackground|#006400
+
+
+  -->Lib5E_GetAndCheckSlotInformation|2
+
+  --~HowFarAway|distance;@{selected|token_id};@{target|token_id}
+  --=HowFar|[$HowFarAway] * 5
+  --?[$HowFar] -gt 30|tooFar
+
+  --#emoteText|[*S:character_name] makes an enchanted suggestion to @{target|token_name}.
+
+  --+Saving Throw|Ask the DM if the saving throw is standard, advantage, or disadvantage for [*T:character_name].
+  --+|[rbutton]Standard::knowYourRoll1;1d20[/rbutton][rbutton]Advantage::knowYourRoll1;2d20kh1[/rbutton][rbutton]Disadvantage::knowYourRoll1;2d20kl1[/rbutton]
+  --X|
+  --:knowYourRoll1|
+  --#whisper|
+  --=SavingThrow|[&reentryval] + [*T:wisdom_save_bonus]
+  --+|Wis Saving Throw [$SavingThrow] vs @{selected|spell_save_dc}
+  --?"[*T:npc_condition_immunities]" -inc "charmed"|immune
+  --?[$SavingThrow] -ge @{selected|spell_save_dc}|Saved
+  --+Charmed|@{target|token_name} failed their saving throw.  They will do the suggestion.
+  --@token-mod| _ids @{target|token_id} _set statusmarkers|charm-person
+  -->Lib5E_DeductSpellSlot|[*S:character_id];[$SlotLevel]
+  --X|
+  --:Saved|
+  --+Saved|@{target|token_name} passed their saving throw.  They will not do the suggestion.  At least not becuase of the spell.
+  --@token-mod| _ids [*S:t-id] _set statusmarkers|aura
+  -->Lib5E_DeductSpellSlot|[*S:character_id];[$SlotLevel]
+  --X|
+
+  --:immune|
+  --+Immune|[*T:token_name] can't be charmed.
+  -->Lib5E_DeductSpellSlot|[*S:character_id];[$SlotLevel]
+  --X|
+
+
+  --:tooFar|
+  --#whisper|
+  --+|The target is too far away. 
+  -->Lib5E_DeductSpellSlot|[*S:character_id];[$SlotLevel]
+  --X|
+
+
+}}

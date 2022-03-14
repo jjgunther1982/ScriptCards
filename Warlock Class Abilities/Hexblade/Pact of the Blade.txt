@@ -1,0 +1,84 @@
+!Scriptcard {{ 
+  --#reentrant|@{selected|character_id} 
+  --#emoteBackground|#transparent
+  --#titleCardBackground|#ffea00
+  --#titlefontsize|1.75em
+  --#titlefontlineheight|1.75em
+  --#titleFontColor|black
+  --#titlefontface|Shadows Into Light
+  --#subtitleFontSize|12px
+  --#subtitleFontFace|Verdana
+  --#evenRowBackground|#B6AB91
+  --#evenRowFontColor|#000000
+  --#oddRowBackground|#CEC7B6
+  --#oddRowFontColor|#000000
+  --#whisper|self,GM
+  --#sourceToken|@{selected|token_id}
+  --#Title|Pact of the Blade
+
+  --?"[*S:character_name]" -ninc "Braeden"|NotBraeden
+  --+|Are you creating a new pact weapon or giving it to someone else?
+  --?[*-Mi7lR-RlzflQdyIepjF:pactblade] -ne 0|>Start;Braeden
+  --?[*-MV-mhkDRp8OD1pvD1ws:pactblade] -ne 0|>Start;Bob
+  --?[*-MYpM2C9Exj-WfmCfIlJ:pactblade] -ne 0|>Start;Graff
+  --?[*-MYNFkjYifY5SIwQGO1F:pactblade] -ne 0|>Start;Cheez
+  --?[*-MV-mo4b_w6fHk9w2rRs:pactblade] -ne 0|>Start;Nala
+  --?[*-MV-mhkDRp8OD1pvD1ws:pactblade] -ne 0|>Start;Bob
+  --+|[rbutton]New::New[/rbutton][rbutton]Giving it to someone else::NotBraeden[/rbutton]
+  --X|
+  --:New|
+  --#leftsub|Class Ability
+  --#rightsub|Action
+  --+Choose your weapon to create.|[rbutton]Greatsword::Chosen;Greatsword[/rbutton][rbutton]Longsword::Chosen;Longsword[/rbutton][rbutton]Glaive::Chosen;Glaive[/rbutton][rbutton]Halberd::Chosen;Halberd[/rbutton][rbutton]Club::Chosen;Club[/rbutton][rbutton]Dagger::Chosen;Dagger[/rbutton][rbutton]Greatclub::Chosen;Greatclub[/rbutton][rbutton]Handaxe::Chosen;Handaxe[/rbutton]
+  --+|[rbutton]Javelin::Chosen;Javelin[/rbutton][rbutton]Light Hammer::Chosen;Light hammer[/rbutton][rbutton]Mace::Chosen;Mace[/rbutton][rbutton]QuarterStaff::Chosen;Quarterstaff[/rbutton][rbutton]Sickle::Chosen;Sickle[/rbutton][rbutton]Spear::Chosen;Spear[/rbutton][rbutton]Battleaxe::Chosen;Battleaxe[/rbutton][rbutton]Flail::Chosen;Flail[/rbutton]
+  --+|[rbutton]Greataxe::Chosen;Greataxe[/rbutton][rbutton]Lance::Chosen;Lance[/rbutton][rbutton]Maul::Chosen;Maul[/rbutton][rbutton]Morningstar::Chosen;Morningstar[/rbutton][rbutton]Pike::Chosen;Pike[/rbutton][rbutton]Rapier::Chosen;Rapier[/rbutton][rbutton]Scimitar::Chosen;Scimitar[/rbutton][rbutton]Shortsword::Chosen;Shortsword[/rbutton]
+  --+|[rbutton]War Pick::Chosen;War Pick[/rbutton][rbutton]Warhammer::Chosen;Warhammer[/rbutton][rbutton]Whip::Chosen;Whip[/rbutton][rbutton]Shortbow::Chosen;Shortbow[/rbutton][rbutton]Longbow::Chosen;Longbow[/rbutton][rbutton]Light Crossbow::Chosen;Light Crossbow[/rbutton][rbutton]Heavy Crossbow::Chosen;Heavy Crossbow[/rbutton]
+  --X|
+  --:Chosen|
+  --#whisper|
+  --&Weapon|[&reentryval]
+  --#emoteText|@{selected|character_name} creates a magical [&Weapon] in his empty hand.
+  --@setattr|_charid [*S:character_id] _pactblade|[&Weapon] _silent
+  --?[*-MYpM2C9Exj-WfmCfIlJ:pactblade] -ne 0|>DestroyOld;-MYpM2C9Exj-WfmCfIlJ
+  --?[*-MYNFkjYifY5SIwQGO1F:pactblade] -ne 0|>DestroyOld;-MYNFkjYifY5SIwQGO1F
+  --?[*-MV-mo4b_w6fHk9w2rRs:pactblade] -ne 0|>DestroyOld;-MV-mo4b_w6fHk9w2rRs
+  --?[*-MV-mhkDRp8OD1pvD1ws:pactblade] -ne 0|>DestroyOld;-MV-mhkDRp8OD1pvD1ws
+  --?[&Weapon] -inc "Greatclub" -or "Glaive" -or "Greataxe" -or "Greatsword" -or "Halberd" -or "Maul" -or "Pike"|TwoHanded
+  --X|
+  --:TwoHanded|
+  --*|Uneqiup Shield and other weapon.
+  --X|
+
+  --:NotBraeden|
+  --?@{selected|pactblade} -eq 0|NoBlade
+  --iWho do you want to give this to?;Click this button to select who is going to get it.|t;Target;Target
+  --#whisper|
+  --#emoteText|[*S:t-name] gave the [*S:pactblade] Pact Blade to [*[&Target]:character_name]
+  --@setattr|_charid [*[&Target]:character_id] _pactblade|[*S:pactblade] _silent
+  --@setattr|_charid [*S:character_id] _pactblade|0 _silent
+  --X|
+  --:NoBlade|
+  --#whisper|
+  --+|You don't have the Pact Weapon to give to someone.
+  --?[*-Mi7lR-RlzflQdyIepjF:pactblade] -ne 0|>TheHaveIt;Braeden
+  --?[*-MV-mhkDRp8OD1pvD1ws:pactblade] -ne 0|>TheHaveIt;Bob
+  --?[*-MYpM2C9Exj-WfmCfIlJ:pactblade] -ne 0|>TheHaveIt;Graff
+  --?[*-MYNFkjYifY5SIwQGO1F:pactblade] -ne 0|>TheHaveIt;Cheez
+  --?[*-MV-mo4b_w6fHk9w2rRs:pactblade] -ne 0|>TheHaveIt;Nala
+  --?[*-MV-mhkDRp8OD1pvD1ws:pactblade] -ne 0|>TheHaveIt;Bob
+  --+|Braeden needs to make one.
+  --X|
+  --:TheHaveIt|
+  --+|[%1%] has it right now.
+  --X|
+
+  --:Start|
+  --+|[%1%] has it right now.
+  --<|
+
+  --:DestroyOld|
+  --@setattr|_charid [%1%] _pactblade|0 _silent
+  --+|The old Pact Weapon disappears from [*[%1%]:character_name]'s hands.
+  --<|
+
+}}
