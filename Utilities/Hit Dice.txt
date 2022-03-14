@@ -1,0 +1,113 @@
+!script{{
++++5ETools+++
+  --#whisper|self,gm
+  --#title|Hit Dice
+  --=PastFirstTime|0
+  --#reentrant|@{selected|character_id} Hit Dice
+  --#sourceToken|@{selected|token_id}
+  --=HitDice|@{selected|hit_dice}
+  --?@{selected|base_level} -eq @{selected|level}|SingleClass
+  --&MultiClass|+ for this class
+  --:AfterDifferentClass|
+  --+What Class|Which class would you like to use for the hit die?
+  --?"[*S:hitdie_final]" -inc "Barbarian"|>Buttons;Barbarian
+  --?"[*S:hitdie_final]" -inc "Bard"|>Buttons;Bard
+  --?"[*S:hitdie_final]" -inc "Cleric"|>Buttons;Cleric
+  --?"[*S:hitdie_final]" -inc "Druid"|>Buttons;Druid
+  --?"[*S:hitdie_final]" -inc "Fighter"|>Buttons;Fighter
+  --?"[*S:hitdie_final]" -inc "Monk"|>Buttons;Monk
+  --?"[*S:hitdie_final]" -inc "Paladin"|>Buttons;Paladin
+  --?"[*S:hitdie_final]" -inc "Ranger"|>Buttons;Ranger
+  --?"[*S:hitdie_final]" -inc "Rogue"|>Buttons;Rogue
+  --?"[*S:hitdie_final]" -inc "Sorcerer"|>Buttons;Sorcerer
+  --?"[*S:hitdie_final]" -inc "Warlock"|>Buttons;Warlock
+  --?"[*S:hitdie_final]" -inc "Wizard"|>Buttons;Wizard
+  --?"[*S:hitdie_final]" -inc "Artificer"|>Buttons;Artificer
+  --?[$TotalDice] -eq 0|NoneLeft
+  --X|
+  --:Buttons|
+  --=Class|[$Class] + 1
+  --&Class[$Class.Raw]|[%1%]
+  -->Lib5E_FindResource|[*S:character_id];[&Class[$Class.Raw]] Hit Dice;HitDiceName[$Class.Raw];HitDice[$Class.Raw]
+  --?[$HitDice[$Class.Raw]] -eq 0|NoButton
+  --?[$PastFirstTime] -gt 0|SkipTotalDiceAdd
+  --=TotalDice|[$HitDice[$Class.Raw]] + [$TotalDice]
+  --:SkipTotalDiceAdd|
+  --+|[&Class[$Class.Raw]] Hit Dice Available [$HitDice[$Class.Raw]]
+  --+|[rbutton][&Class[$Class.Raw]]::RollDie;[&Class[$Class.Raw]][/rbutton]
+  --:NoButton|
+  --<|
+
+  --:RollDie|
+  --=PastFirstTime|1
+  --&Class|[&reentryval]
+  -->Lib5E_FindResource|[*S:character_id];[&Class] Hit Dice;HitDiceName;HitDice
+  --?[$HitDice] -eq 0|NoneLeft
+  --:RollDiceSingle|
+  --?"[&Class]" -inc "Barbarian"|&Dice;1d12
+  --?"[&Class]" -inc "Ranger"|>HitDiceLoop;1d10
+  --?"[&Class]" -inc "Fighter"|>HitDiceLoop;1d10
+  --?"[&Class]" -inc "Paladin"|>HitDiceLoop;1d10
+  --?"[&Class]" -inc "Artificer"|>HitDiceLoop;1d8
+  --?"[&Class]" -inc "Bard|>HitDiceLoop;1d8
+  --?"[&Class]" -inc "Cleric"|>HitDiceLoop;1d8
+  --?"[&Class]" -inc "Druid"|>HitDiceLoop;1d8
+  --?"[&Class]" -inc "Monk"|>HitDiceLoop;1d8
+  --?"[&Class]" -inc "Rogue"|>HitDiceLoop;1d8
+  --?"[&Class]" -inc "Warlock"|>HitDiceLoop;1d8
+  --?"[&Class]" -inc "Sorcerer"|>HitDiceLoop;1d6
+  --?"[&Class]" -inc "Wizard"|>HitDiceLoop;1d6
+  --:HitDiceLoop|
+  --&Dice|[%1%]
+  --=TotalDice|[$TotalDice] - 1
+  --=LoopCount|[$LoopCount] + 1
+  --=Healing|[&Dice] + [*S:constitution_mod] [CON]
+  --=HealingTotal|[$Healing] + [$HealingTotal]
+  --=Health|[*S:hp] + [$HealingTotal]
+  --=HitDice|[$HitDice] - 1
+  --+Hit Dice|You rolled [$Healing].  You have healed for a total of [$HealingTotal] hit points.
+  --?[$Health] -ge [*S:t-bar1_max]|=Health;[*S:t-bar1_max]
+  --+|Your Current Health is [$Health].  You have [$HitDice] Hit Dice left[&MultiClass].
+  --?[$Health] -ge [*S:t-bar1_max]|NoMore
+  --?[$TotalDice] -eq 0|NoMore
+  --?[$HitDice] -eq 0|DoNotAsk
+  --+Do you want to roll another hit dice[&MultiClass]?|[rbutton]yes::HitDiceLoop[/rbutton][rbutton]no::NoMore[/rbutton]
+  --?@{selected|base_level} -eq @{selected|level}|SkipMultiAskWithDiceAvailable
+  --+|[rbutton]Heal using a different class hit dice::DifferentClass[/rbutton]
+  --:SkipMultiAskWithDiceAvailable|
+  --X|
+  --:DoNotAsk|
+  --?[*S:base_level] -eq [*S:level]|SkipMultiAsk
+  --+|[rbutton]Heal using a different class hit dice::DifferentClass[/rbutton][rbutton]All Done::NoMore[/rbutton]
+  --:SkipMultiAsk|
+  --X|
+
+  --:SingleClass|
+  --?[*S:hit_dice] -eq 0|NoneLeft
+  --&Class|[*S:class]
+  --^RollDiceSingle|
+
+  --:NoMore| 
+  --#whisper|
+  --=TotalDiceRemaining|[*S:hit_dice] - [$LoopCount]
+  --!a:S|hit_dice:[$TotalDiceRemaining]
+  -->ApplyHealingAlterbars|[*S:t-id];1;[$HealingTotal]
+  --?[*S:base_level] -eq [*S:level]|AllDone
+  --!a:S|[&HitDice]:[$HitDice]
+  --:AllDone|
+  --X|
+
+  --:NoneLeft|
+  --+None Left|You don't have any hit dice left|
+  --X|
+
+  --:DifferentClass|
+  --!a:S|[&HitDice]:[$HitDice]
+  --+|[&Class] Hit Dice Left: [$HitDice] 
+  --^AfterDifferentClass|
+
+  --:ApplyHealingAlterbars|
+  --@alter|_target|[%1%] _bar|[%2%] _amount|+[%3%]
+  --<|
+
+}}

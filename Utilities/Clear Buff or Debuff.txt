@@ -1,0 +1,123 @@
+!scriptcards {{ 
++++5ETools+++
+  --#reentrant|RemoveStuff
+  --#whisper|self
+  --#title|Remove Buff/Debuff
+  --#sourceToken|@{selected|token_id}
+  --#titleCardBackground|#006400
+
+  --+Which Buff?|[rbutton]Bless::Bless[/rbutton][rbutton]Bardic Inspiration::BardicInspiration[/rbutton][rbutton]HexBlade Curse::HexBladeCurse[/rbutton]
+  --+|[rbutton]Pact Blade::PactBlade[/rbutton][rbutton]Hex::Hex[/rbutton][rbutton]Bane::Bane[/rbutton][rbutton]Haste::Haste[/rbutton][rbutton]Slayer's Prey::SlayerPrey[/rbutton]
+  --+|[rbutton]Hunter's Mark::HunterMark[/rbutton][rbutton]Magic Weapon::MagicWeapon[/rbutton][rbutton]Zephyr Strike::ZephyrStrike[/rbutton][rbutton]Fly::Fly[/rbutton][rbutton]Aid::Aid[/rbutton][rbutton]Max HP Change::MaxHPChange[/rbutton]
+  --X|
+  --:Bless|
+  --#whisper|
+  --@setattr|_charid @{selected|character_id} _repeating_savemod_$0_global_save_active_flag|0 _silent
+  --@setattr|_charid @{selected|character_id} _repeating_tohitmod_$0_global_attack_active_flag|0 _silent
+  --@token-mod| _ids @{selected|character_id}  _set statusmarkers|-Bless
+  --+|Bless is removed from @{selected|token_name}
+  --*|Get rid of the turn tracker.
+  --*|Does Aura need to be removed?
+  --X|
+  --:BardicInspiration|
+  --#whisper|
+  --@setattr|_charid @{selected|character_id} _Bard|0 _silent
+  -->Lib5E_Global_mod_finder|[*S:character_id];tohit;[&ResourceUsed];Attack
+  --@setattr|_charid @{selected|character_id} _repeating_[&ModType]mod_$[$ModLoop]_global_[&ModType2]_active_flag|0 _silent
+  -->Lib5E_Global_mod_finder|[*S:character_id];save;[&ResourceUsed];Save
+  --@setattr|_charid @{selected|character_id} _repeating_[&ModType]mod_$[$ModLoop]_global_[&ModType2]_active_flag|0 _silent
+  -->Lib5E_Global_mod_finder|[*S:character_id];skill;[&ResourceUsed];Skill
+  --@setattr|_charid @{selected|character_id} _repeating_[&ModType]mod_$[$ModLoop]_global_[&ModType2]_active_flag|0 _silent
+  --+Bardic Inspiration|[*S:t-name] has lost bardic inspiration.
+  --X|
+  --:HexBladeCurse|
+  --#whisper|
+  --+Hex Blade Curse|[*[*S:hexblade]:t-name] has lost Hex Blade Curse.
+  --@setattr|_charid [*S:character_id] _hexblade| _silent
+  --*|Remove Hexblade turn tracker.
+  --X|
+  --:PactBlade|
+  --#whisper|
+  --@setattr|_charid [*S:character_id] _pactblade| _silent
+  --+Pact Blade|The Pact Blade vanishes.
+  --X|
+  --:Hex|
+  --#whisper|
+  -->Lib5E_Global_mod_finder|[*S:character_id];damage;Hex
+  --@token-mod| _ids [*S:hex] _set statusmarkers|-death-zone
+  --@token-mod| _ids [*S:character_id] _set statusmarkers|-aura
+  --@setattr|_charid [*S:character_id] _repeating_[&ModType]mod_$[$ModLoop.Raw]_global_[&ModType]_active_flag|0 _silent
+  --+Hex|[*[*S:Hex]:t-name] is no longer hexed.
+  --@setattr|_charid [*S:character_id] _Hex| _silent
+  --X|
+  --:Bane|
+  --#whisper|
+  --/Not used yet.
+  --X|
+  --:Haste|
+  --#whisper|
+  -->Lib5E_Global_mod_finder|[*S:character_id];ac;Haste
+  --@setattr|_charid [*S:character_id] _repeating_[&ModType]mod_$[$ModLoop]_global_[&ModType2]_active_flag|0 _silent
+  --@token-mod| _ids [*S:t-id] _set statusmarkers|-Haste
+  --*|Get rid of [*S:character_name]'s Haste turn tracker.
+  --*|Check to see if you need to get rid of Graff's Aura.
+  --+Haste Gone|[*S:character_name] can't move or take actions until after its next turn because it is super tired.
+  --X|
+  --:SlayerPrey|
+  --#whisper|
+  --+Slayer's Prey|[*[*S:Prey]:t-name] is no longer being stalked by [*S:t-name]
+  --@token-mod| _ids [*S:Prey] _set statusmarkers|-green
+  --@setattr|_charid [*S:character_id] _Prey| _silent
+  --X|
+  --:HunterMark|
+  --#whisper|
+  --@token-mod| _ids [*S:marked] _set statusmarkers|-yellow
+  --@token-mod| _ids [*S:character_id] _set statusmarkers|-aura
+  --+Hunter's Mark|[*[*S:marked]:t-name] is no longer marked by [*S:t-name]
+  --@setattr|_charid [*S:character_id] _marked| _silent
+  --X|
+  --:MagicWeapon|
+  --#whisper|
+  --@setattr|_charid [*S:character_id] _MagicWeapLVL| _silent
+  --@setattr|_charid [*S:character_id] _MagicWeapon| _silent
+  --@token-mod| _ids [*S:character_id] _set statusmarkers|-aura
+  --+Magical Weapon|[*S:character_name]'s weapon is no longer magical.
+  --X|
+  --:ZephyrStrike|
+  --#whisper|
+  --+Zephyr Strike|[*S:token_name] slows down.
+  --*|Get rid of Zephyr Strike turn tracker.
+  --@token-mod| _ids [*S:character_id] _set statusmarkers|-aura
+  --@setattr|_charid [*S:character_id] _Zephyr|0 _silent
+  --@roll20AM|_audio,play,nomenu|Shrink
+  --@token-mod| _set tint_color|transparent _ids [*S:character_id]
+  --X|
+  --:Fly|
+  --#whisper|
+  --@token-mod| _ids [*S:t-id] _set statusmarkers|-fluffy-wing
+  --+Falling|If [*S:t-name] was in the air, they fall to the ground.
+  --*|[*S:t-name] take 1d6 bludgeoning damage for every 10 feet they fall.
+  --*|Do you need to remove aura from Pamorette?
+  --X|
+  --:Aid|
+  --#whisper|
+  --+Aid Removed|[*S:t-name] is no longer getting a buff from Aid.  Their Max HP has been reduced by [*S:TempHPMaxBonusAid].
+  --!a:[*S:character_id]|hp^:-=[*S:TempHPMaxBonusAid]
+  --!a:[*S:character_id]|TempHPMaxBonus:0
+  --@token-mod| _ids [*S:t-id] _set statusmarkers|-bolt-shield
+  --X|
+  --:MaxHPChange|
+  --#whisper|
+  --?[*S:TempHPMaxBonus] -gt 0|decreaseMaxHPChange
+  --!a:[*S:character_id]|hp^:-=[*S:TempHPMaxBonus]
+  --!a:[*S:character_id]|TempHPMaxBonus:0
+  --@token-mod| _ids [*S:t-id] _set statusmarkers|-strong
+  --+|[*S:t-name] Max HP has returned to normal.
+  --X|
+  --:decreaseMaxHPChange|
+  --!a:[*S:character_id]|hp^:-=[*S:TempHPMaxBonus]
+  --!a:[*S:character_id]|TempHPMaxBonus:0
+  --@token-mod| _ids [*S:t-id] _set statusmarkers|-death-zone
+  --+|[*S:t-name] Max HP has returned to normal.
+  --X|
+}}

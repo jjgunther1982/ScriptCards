@@ -1,0 +1,105 @@
+!scriptcard {{
+  --#reentrant|@{selected|character_id}  ​
+  --#title|Ability Check
+  --#whisper|self,GM
+
+  --+Is this roll standard, at advantage, or disadvantage?|[rbutton]Standard::KnowYourRoll;1d20[/rbutton][rbutton]Advantage::KnowYourRoll;2d20kh1[/rbutton][rbutton]Disadvantage::KnowYourRoll;2d20kl1[/rbutton]
+  --X|
+  --:KnowYourRoll|
+  --=AttackRoll|[&reentryval]
+  
+  --+Guidance|Did that loser Graff give you guidance?
+  --+|[rbutton]Yes::GuideMe;1d4 [Guidance][/rbutton][rbutton]No::GuideMe;0[/rbutton]
+  --X|
+  --:GuideMe|
+  --#whisper|
+  --=Guide|[&reentryval]
+
+
+  -->Bardic|
+  --:AfterBardic|
+
+  --?[$Guide] -eq 0|NoGuide
+  --+Roll|@{selected|token_name} Rolled [$AttackRoll] and [$Guide]
+  --?[$AttackRoll.Base] -eq 1|Fumble
+  --?[$AttackRoll.Base] -eq 20|>Crit
+  --^GetToIt|
+  --:NoGuide|
+  --+Roll|@{selected|token_name} Rolled [$AttackRoll]
+  --?[$AttackRoll.Base] -eq 1|>Fumble
+  --?[$AttackRoll.Base] -eq 20|>Crit
+  --:GetToIt|
+  --=AttackRoll|[$AttackRoll] + [$Guide] + [$BardicRoll]
+
+  --=Acr| [$AttackRoll] + @{selected|Acrobatics_bonus}
+  --=Anim| [$AttackRoll] + @{selected|Animal_Handling_bonus}
+  --=Arc| [$AttackRoll] + @{selected|Arcana_bonus}
+  --=Ath| [$AttackRoll] + @{selected|Athletics_bonus}
+  --=Dec| [$AttackRoll] + @{selected|Deception_bonus}
+  --=His| [$AttackRoll] + @{selected|History_bonus}
+  --=Insight| [$AttackRoll] + @{selected|Insight_bonus}
+  --=Intim| [$AttackRoll] + @{selected|Intimidation_bonus}
+  --=Invest| [$AttackRoll] + @{selected|Investigation_bonus}
+  --=Medic| [$AttackRoll] + @{selected|Medicine_bonus}
+  --=Nature| [$AttackRoll] + @{selected|Nature_bonus}
+  --=Perception| [$AttackRoll] + @{selected|Perception_bonus}
+  --=Performance| [$AttackRoll] + @{selected|Performance_bonus}
+  --=Pers| [$AttackRoll] + @{selected|Persuasion_bonus}
+  --=Relig| [$AttackRoll] + @{selected|Religion_bonus}
+  --=Sleight| [$AttackRoll] + @{selected|Sleight_of_Hand_bonus}
+  --=Stealth| [$AttackRoll] + @{selected|Stealth_bonus}
+  --=Surv| [$AttackRoll] + @{selected|Survival_bonus}
+  --+Acrobatics|[$Acr]
+  --+Animal Handling|[$Anim]
+  --+Arcana|[$Arc]
+  --+Athletics|[$Ath]
+  --+Deception| [$Dec]
+  --+History| [$His]
+  --+Insight| [$Insight]
+  --+Intimidation| [$Intim]
+  --+Investigation| [$Invest]
+  --+Medicine|[$Medic]
+  --+Nature| [$Nature]
+  --+Perception|[[$Perception]
+  --+Performance|[$Performance]
+  --+Persuasion|[$Pers]
+  --+Religion|[$Relig]
+  --+Sleight of Hand|[$Sleight]
+  --+Stealth|[$Stealth]
+  --+Survival| [$Surv]
+  --X|
+
+  --:Bardic|
+  --?@{selected|Bard} -eq 1|BardOn
+  -->AfterBardic|
+  --:BardOn|
+  --?[$Guide] -eq 0|NoBardGuide
+  --=GuideAttack|[$AttackRoll] + [$Guide]
+  --iYou rolled a [$AttackRoll] and [$Guide] for Guidance for a total of [$GuideAttack].;Click this button to to decide if you want to use Bardic Inspraition.|q;maybe;Yes or No?|Yes|No|
+  --^AfterBardGuide|
+  --:NoBardGuide|
+  --iYou rolled a [$AttackRoll].;Click this button to to decide if you want to use Bardic Inspraition.|q;maybe;Yes or No?|Yes|No|
+  --:AfterBardGuide|
+  --?"[&maybe]" -inc "yes"|BardYes
+  -->AfterBardic|
+  --:BardYes|
+  --=BardDie|@{Bob|class2_classlevel} \ 5 * 2 + 6
+  --=BardicRoll| 1d[$BardDie]
+  --+Bardic Inspiration|You added [$BardicRoll] to your roll.
+  --@setattr|_charid @{selected|character_id} _Bard|0 _silent
+  -->AfterBardic|
+
+  --:Fumble|
+  --@roll20AM|_audio,play,nomenu|Failure
+  --+|[img]https://media3.giphy.com/media/duexIlfr9yYwYE23UA/giphy.gif?cid=ecf05e4735w197ln6hoja74l3ikcd7t0w971w0ljtmjp000n&rid=giphy.gif&ct=g[/img]
+  --<
+  --X|
+
+  --:Crit|
+  --+|[img]https://media0.giphy.com/media/HggxGlGAWFkbK/giphy.gif?cid=ecf05e47sikevtlvfdmqrjfvdc4ip77ustsujbjq3rh9sif9&rid=giphy.gif&ct=g[/img]
+  --<|
+  --X|
+
+
+}}
+

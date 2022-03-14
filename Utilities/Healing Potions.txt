@@ -1,0 +1,101 @@
+!Scriptcard {{ 
+
+  --#sourceToken|@{selected|token_id}
+  --#Title|Healing Potions
+  --#whisper|self,gm
+
+  -->GetAndCheckAmmoInformation|[*S:character_id];Potion of Healing;HealingName;Healing
+  --=Healing|[*S:[&Healing]]
+  -->GetAndCheckAmmoInformation|[*S:character_id];Potion of Greater Healing;GreaterName;Greater
+  --=Greater|[*S:[&Greater]]
+  -->GetAndCheckAmmoInformation|[*S:character_id];Potion of Superior Healing;SuperiorName;Superior
+  --=Superior|[*S:[&Superior]]
+  --=Total|[$Healing] + [$Greater] + [$Oil]
+  --?[$Total] -eq 0|NoHealing
+
+  --+|What kind of potion do you want to take?
+  --?[$Healing] -gt 0|>LightIt;Healing;Healing
+  --?[$Greater] -gt 0|>LightIt;Greater Healing;Greater
+  --?[$Superior] -gt 0|>LightIt;Superior Healing;Superior
+  --X|
+  --:Healing|
+  --#emoteText|[*S:t-name] takes a Healing potion.
+  --=Healed|2d4 + 2
+  --=Max|[*S:t-bar1_max]
+  --=New|[*S:t-bar1_value] + [$Healed]
+  --+|[$New]
+  --?[$New] -ge [$Max]|>Max;Healing
+  --?[$New] -lt [$Max]|>Added;Healing
+  -->UsedUp|Healing
+
+  --:Greater|
+  --#emoteText|[*S:t-name] takes a Greater Healing potion.
+  --=Healed|4d4 + 4
+  --=Max|[*S:t-bar1_max]
+  --=New|[*S:t-bar1_value] + [$Healed]
+  --?[$New] -ge [$Max]|>Max;Greater Healing
+  --?[$New] -lt [$Max]|>Added;Greater Healing
+  -->UsedUp|Greater
+
+  --:Superior|
+  --#emoteText|[*S:t-name] takes a Superior Healing potion.
+  --=Healed|8d4 + 8
+  --=Max|[*S:t-bar1_max]
+  --=New|[*S:t-bar1_value] + [$Healed]
+  --?[$New] -ge [$Max]|>Max;Superior Healing
+  --?[$New] -lt [$Max]|>Added;Superior Healing
+  -->UsedUp|Superior
+  
+  --:UsedUp|
+  --#whisper|
+  --?"[%1%]" -inc "Healing"|>GetRidOfIt;Healing;[&Healing];[$Healing];Healing;Healing Potions
+  --?"[%1%]" -inc "Greater"|>GetRidOfIt;Greater;[&Greater];[$Greater];Greater;Greater Healing Potions
+  --?"[%1%]" -inc "Superior"|>GetRidOfIt;Superior;[&Superior];[$Superior];Superior;Superior Healing Potions
+  --:GetRidOfIt|
+  --=[%4%]|[%3%] - 1
+  --+|[img]https://s3.amazonaws.com/files.d20.io/images/262510068/Ldov5OZVqipQhP959J4h3g/original.jpg?16410030195[/img]
+  --@setattr|_charid [*S:character_id] _[%2%]|[$[%4%]] _silent
+  --+|[%5%] Left: [$[%4%]]
+  --X|
+
+
+
+  
+
+--:GetAndCheckAmmoInformation|character_id;resourceName;Ammoname;Ammo;&Ammo
+--?"[%2%]" -eq "[*[%1%]:class_resource_name]"|_Lib5E_IsResourceClass
+--?"[%2%]" -eq "[*[%1%]:other_resource_name]"|_Lib5E_IsResourceOther
+--Rfirst|[%1%];repeating_resource
+--:_Lib5E_ResourceLoop|
+--?"[*R:resource_left_name]" -eq "[%2%]"|_Lib5E_IsResourceLeft
+--?"[*R:resource_right_name]" -eq "[%2%]"|_Lib5E_IsResourceRight
+--Rnext|
+--?"[*R:resource_left_name]" -ne "NoRepeatingAttributeLoaded"|_Lib5E_ResourceLoop
+--&[%3%]|NotFound --*|Not Found --&[%4%]|NotFound --$[%4%]|0 
+--<|
+--:_Lib5E_IsResourceClass| --*|IsClass --&[%3%]|class_resource_name --&[%4%]|class_resource --=[%4%]|[*[%1%]:class_resource] --<|
+--:_Lib5E_IsResourceOther| --*|IsOther --&[%3%]|other_resource --&[%4%]|other_resource --=[%4%]|[*[%1%]:other_resource] --<|
+--:_Lib5E_IsResourceLeft| --*|IsLeft --&[%3%]|[*R>resource_left_name] --&[%4%]|[*R>resource_left] --=[%4%]|[*R:resource_left] --<|
+--:_Lib5E_IsResourceRight| --*|IsRight --&[%3%]|[*R>resource_right_name] --&[%4%]|[*R>resource_right] --=[%4%]|[*R:resource_right] --<|
+--<|
+
+  --:LightIt|
+  --+|[rbutton][%1%]::[%2%][/rbutton]
+  --<|
+
+  --:NoHealing|
+  --+|You have no potions.
+  --#emoteText|[*S:t-name] is all out of potions.
+  --X|
+
+  --:Max|
+  --+Healing|[*S:t-name] took a [%1%] potion.  They were healed for [$Healed] hp.  They are at max health of [*S:t-bar1_max]
+  --@alter|_target|@{selected|token_id} _bar|1 _amount|[*S:t-bar1_max]
+  --<|
+
+  --:Added|
+  --+Healing|[*S:t-name] took a [%1%] potion.  They were healed for [$Healed] hp.  Their current health is [$New].
+  --@alter|_target|@{selected|token_id} _bar|1 _amount|+[$Healed]
+  --<|
+
+}}

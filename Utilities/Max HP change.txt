@@ -1,0 +1,24 @@
+!scriptcards {{ 
+  --#sourceToken|@{selected|token_id}
+  --#reentrant|@{selected|character_id} 
+  --#emoteBackground|#transparent
+  --#titleFontColor|white
+  --#titlefontface|Shadows Into Light
+  --#subtitleFontSize|12px
+  --#subtitleFontFace|Verdana
+  --#whisper|gm
+  --#title|Max HP Change
+
+  --IHow much do you want to change [*S:t-name] Max HP by?;Click the button to enter the change in Max HP.|q;NewHPMax;Enter the change in HP Max?
+  --=TempHPMaxBonusChange|[*S:TempHPMaxBonus] + [&NewHPMax]
+  --#whisper|
+  --+Max HP change|[*S:t-name] Max HP has changed by [&NewHPMax].
+  --!a:[*S:character_id]|hp^:+=[&NewHPMax]
+  --!a:[*S:character_id]|TempHPMaxBonus:[$TempHPMaxBonusChange]
+  --?[&NewHPMax] -gt 0|increase
+  --@token-mod| _ids [*S:t-id] _set statusmarkers|death-zone
+  --X|
+  --:increase|
+  --@token-mod| _ids [*S:t-id] _set statusmarkers|strong
+  --X|
+}}

@@ -1,0 +1,83 @@
+!scriptcard {{
+  --#sourceToken|@{selected|token_id}
+  --#emoteText|[*S:t-name] made a saving roll.
+
+  --#title|Saving Roll
+  --=SavingRoll| 1d20
+  --=SavingRoll2| 1d20
+  --=Blessed|1d4 [BLESS]
+  --=Bless|@{selected|repeating_savemod_$0_global_save_active_flag}
+
+  -->Bardic|
+  --:AfterBardic|
+
+  --?[$Bless] -eq 0|NotBlessed
+  --+Roll|@{selected|token_name} Rolled [$SavingRoll] and a [$SavingRoll2] and [$Blessed] for being blessed.
+  --=SavingRoll| [$SavingRoll] + [$Blessed] + [$BardicRoll]
+  --=SavingRoll2| [$SavingRoll2] + [$Blessed] + [$BardicRoll]
+  --^Blessed|
+  --:NotBlessed|
+  --+Roll|@{selected|token_name} Rolled [$SavingRoll] and a [$SavingRoll2].
+  --=SavingRoll| [$SavingRoll] + [$BardicRoll]
+  --=SavingRoll2| [$SavingRoll2] + [$BardicRoll]
+  --:Blessed|
+  --=STR| [$SavingRoll] + @{selected|strength_save_bonus}[STR SAVE]
+  --=Dex| [$SavingRoll] + @{selected|dexterity_save_bonus}[DEX]
+  --=Con| [$SavingRoll] + @{selected|constitution_save_bonus}
+  --=Int| [$SavingRoll] + @{selected|intelligence_save_bonus}
+  --=Wis| [$SavingRoll] + @{selected|wisdom_save_bonus}
+  --=Char| [$SavingRoll] + @{selected|charisma_save_bonus}
+  --=STR2| [$SavingRoll2] + @{selected|strength_save_bonus}[STR SAVE]
+  --=Dex2| [$SavingRoll2] + @{selected|dexterity_save_bonus}[DEX]
+  --=Con2| [$SavingRoll2] + @{selected|constitution_save_bonus}
+  --=Int2| [$SavingRoll2] + @{selected|intelligence_save_bonus}
+  --=Wis2| [$SavingRoll2] + @{selected|wisdom_save_bonus}
+  --=Char2| [$SavingRoll2] + @{selected|charisma_save_bonus}
+
+  --+Str|[$STR][$STR2]
+  --+Dex|[$Dex][$Dex2]
+  --+Con|[$Con][$Con2]
+  --+Int|[$Int][$Int2]
+  --+Wis|[$Wis][$Wis2]
+  --+Cha|[$Char][$Char2]
+  --?"[*S:t-name]" -inc "Graff"|GodsFavor
+  --X|
+
+  --:Bardic|
+  --=BardicRoll|0
+  --?@{selected|Bard} -eq 1|BardOn
+  --^AfterBardic|
+  --:BardOn|
+  --?[$Bless] -eq 0|NoBardGuide
+  --=GuideAttack|[$SavingRoll] + [$Blessed]
+  --=GuideAttack2|[$SavingRoll2] + [$Blessed]
+  --iYou rolled a [$SavingRoll] for roll 1 and [$SavingRoll2] for roll 2 and rolled [$Blessed] for being blessed for a total of [$GuideAttack] and [$GuideAttack2].;Click this button to to decide if you want to use Bardic Inspraition.|q;maybe;Yes or No?|Yes|No|
+  --^AfterBardGuide|
+  --:NoBardGuide|
+  --iYou rolled a [$SavingRoll] for roll 1 and [$SavingRoll2] for roll 2.;Click this button to to decide if you want to use Bardic Inspraition.|q;maybe;Yes or No?|Yes|No|
+  --:AfterBardGuide|
+  --?"[&maybe]" -inc "yes"|BardYes
+  --^AfterBardic|
+  --:BardYes|
+  --=BardDie|@{Bob|class2_classlevel} \ 5 * 2 + 6
+  --=BardicRoll| 1d[$BardDie]
+  --+Bardic Inspiration|You added [$BardicRoll] to your roll.
+  --@setattr|_charid @{selected|character_id} _Bard|0 _silent
+  --^AfterBardic|
+
+  --:GodsFavor|
+  --?[*S:class_resource] -eq 0|FavorOff
+  --+Favored by the Gods|Ask the DM if you failed.  If you did, do you want to use favored by the gods?
+  --+|[rbutton]Yes::FavorOn[/rbutton][rbutton]No::FavorOff[/rbutton]
+  --X|
+  --:FavorOn|
+  --=Favor|2d4
+  --+Favour of the Gods|Add [$Favor] to your roll.
+  --@setattr|_charid [*S:character_id] _class_resource|0 _silent
+  --X|
+  --:FavorOff|
+  --X|
+
+}}
+
+
